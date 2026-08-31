@@ -1,0 +1,10 @@
+export const MIN_DESCRIPTION_WORDS = 30;
+export const DEFAULT_FEED_RADIUS_KM = 25;
+export const DEFAULT_RADIUS_KM = DEFAULT_FEED_RADIUS_KM;
+export const DEFAULT_FEED_LIMIT = 20;
+export const MAX_FEED_LIMIT = 50;
+export const DEFAULT_IMAGE_MAX_DIMENSION = 1600;
+export const MAX_IMAGE_COMPRESSION_QUALITY = 0.92;
+export const PNG_IMAGE_QUALITY = 0.9;
+export const JPEG_IMAGE_QUALITY = 0.8;
+export const GEOLOCATION_TIMEOUT_MS = 10000;
