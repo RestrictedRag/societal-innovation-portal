@@ -19,6 +19,8 @@ export const signUpSchema = z.object({
   role: z.enum(userRoleEnum),
   city: z.string().trim().min(1, 'City is required.'),
   state: z.string().trim().min(1, 'State is required.'),
+  formattedAddress: z.string().trim().optional(),
+  country: z.string().trim().optional(),
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
 });

@@ -24,29 +24,31 @@ export function AuthCardWrapper({
   roleBadge,
 }: AuthCardWrapperProps) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 p-4 sm:p-6">
-      <div className="w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-900/90 p-6 shadow-2xl shadow-slate-950/30 backdrop-blur sm:p-8">
-        <div className="mb-6 flex items-center justify-between gap-3">
+    <div className="flex min-h-screen items-center justify-center bg-canvas p-3 sm:p-6">
+      <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-4 shadow-soft backdrop-blur sm:max-w-2xl sm:p-8">
+        <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.22em] text-cyan-400">{headerLabel}</p>
+            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-brand-500 sm:text-xs">
+              {headerLabel}
+            </p>
           </div>
           {roleBadge ? (
-            <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-300">
+            <span className="inline-flex self-start rounded-full border border-brand-500/20 bg-brand-50 px-3 py-1 text-[10px] font-medium text-brand-700 sm:text-xs">
               {roleBadge}
             </span>
           ) : null}
         </div>
 
         <div className="mb-6">
-          <h1 className="text-3xl font-semibold text-white">{title}</h1>
-          <p className="mt-2 text-sm text-slate-400">{subtitle}</p>
+          <h1 className="text-2xl font-semibold text-ink sm:text-3xl">{title}</h1>
+          <p className="mt-2 text-sm text-muted">{subtitle}</p>
         </div>
 
         {children}
 
-        <div className="mt-6 border-t border-slate-800 pt-5 text-center text-sm text-slate-400">
+        <div className="mt-6 border-t border-border pt-5 text-center text-sm text-muted">
           {footerText}{' '}
-          <a href={footerHref} className={cn('font-medium text-cyan-400 transition hover:text-cyan-300')}>
+          <a href={footerHref} className={cn('font-medium text-brand-500 transition hover:text-brand-600')}>
             {footerLink}
           </a>
         </div>

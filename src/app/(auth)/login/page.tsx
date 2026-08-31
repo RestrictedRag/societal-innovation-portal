@@ -1,10 +1,12 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { authClient } from '@/lib/auth/client';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 
 import { AuthCardWrapper } from '@/components/auth/AuthCardWrapper';
+import { AuthSubmitButton } from '@/components/auth/AuthSubmitButton';
 import { FormInput } from '@/components/auth/FormInput';
 import { loginSchema, type LoginValues } from '@/lib/validations/auth';
 
@@ -23,19 +25,13 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (values: LoginValues) => {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(values),
+    const { error } = await authClient.signIn.email({
+      email: values.email,
+      password: values.password,
     });
 
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => ({ message: 'Login failed.' }))) as {
-        message?: string;
-      };
-      throw new Error(payload.message ?? 'Login failed.');
+    if (error) {
+      throw new Error(error.message || 'Invalid email or password.');
     }
 
     router.push('/');
@@ -69,13 +65,7 @@ export default function LoginPage() {
           {...register('password')}
         />
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="flex w-full items-center justify-center rounded-xl bg-cyan-500 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {isSubmitting ? 'Signing in...' : 'Sign in'}
-        </button>
+        <AuthSubmitButton isLoading={isSubmitting} loadingText="Signing in..." text="Sign in" />
       </form>
     </AuthCardWrapper>
   );

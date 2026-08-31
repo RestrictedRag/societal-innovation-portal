@@ -1,12 +1,14 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { authClient } from '@/lib/auth/client';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 
 import { AuthCardWrapper } from '@/components/auth/AuthCardWrapper';
+import { AuthSubmitButton } from '@/components/auth/AuthSubmitButton';
 import { FormInput } from '@/components/auth/FormInput';
-import { LocationDetector } from '@/components/auth/LocationDetector';
+import { LocationInput } from '@/components/auth/LocationInput';
 import { RoleSelector } from '@/components/auth/RoleSelector';
 import { signUpSchema, type SignUpValues } from '@/lib/validations/auth';
 
@@ -18,6 +20,8 @@ const defaultValues: SignUpValues = {
   role: 'CITIZEN',
   city: '',
   state: '',
+  formattedAddress: '',
+  country: '',
   latitude: null,
   longitude: null,
 };
@@ -38,10 +42,18 @@ export default function SignUpPage() {
   const role = watch('role');
   const city = watch('city');
   const state = watch('state');
-  const latitude = watch('latitude');
-  const longitude = watch('longitude');
 
   const onSubmit = async (values: SignUpValues) => {
+    const { error: signUpError } = await authClient.signUp.email({
+      email: values.email,
+      password: values.password,
+      name: `${values.firstName} ${values.lastName}`,
+    });
+
+    if (signUpError) {
+      throw new Error(signUpError.message || 'Failed to create account.');
+    }
+
     const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers: {
@@ -51,13 +63,13 @@ export default function SignUpPage() {
     });
 
     if (!response.ok) {
-      const payload = (await response.json().catch(() => ({ message: 'Registration failed.' }))) as {
+      const payload = (await response.json().catch(() => ({ message: 'Profile setup failed.' }))) as {
         message?: string;
       };
-      throw new Error(payload.message ?? 'Registration failed.');
+      throw new Error(payload.message ?? 'Profile setup failed.');
     }
 
-    router.push('/login');
+    router.push('/');
   };
 
   return (
@@ -113,27 +125,32 @@ export default function SignUpPage() {
           error={errors.role?.message}
         />
 
-        <LocationDetector
-          city={city}
-          state={state}
-          latitude={latitude}
-          longitude={longitude}
-          onCityChange={(value) => setValue('city', value, { shouldValidate: true, shouldDirty: true })}
-          onStateChange={(value) => setValue('state', value, { shouldValidate: true, shouldDirty: true })}
-          onCoordinatesChange={(coords) => {
-            setValue('latitude', coords?.latitude ?? null, { shouldValidate: true, shouldDirty: true });
-            setValue('longitude', coords?.longitude ?? null, { shouldValidate: true, shouldDirty: true });
+        <LocationInput
+          value={[city, state].filter(Boolean).join(', ')}
+          onLocationClear={() => {
+            setValue('city', '', { shouldValidate: true, shouldDirty: true });
+            setValue('state', '', { shouldValidate: true, shouldDirty: true });
+            setValue('formattedAddress', '', { shouldValidate: true, shouldDirty: true });
+            setValue('country', '', { shouldValidate: true, shouldDirty: true });
+            setValue('latitude', null, { shouldValidate: true, shouldDirty: true });
+            setValue('longitude', null, { shouldValidate: true, shouldDirty: true });
+          }}
+          onLocationSelect={(location) => {
+            setValue('city', location.city, { shouldValidate: true, shouldDirty: true });
+            setValue('state', location.state, { shouldValidate: true, shouldDirty: true });
+            setValue('formattedAddress', location.formattedAddress, { shouldValidate: true, shouldDirty: true });
+            setValue('country', location.country, { shouldValidate: true, shouldDirty: true });
+            setValue('latitude', location.latitude, { shouldValidate: true, shouldDirty: true });
+            setValue('longitude', location.longitude, { shouldValidate: true, shouldDirty: true });
           }}
           error={errors.city?.message || errors.state?.message}
         />
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="flex w-full items-center justify-center rounded-xl bg-cyan-500 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {isSubmitting ? 'Creating account...' : 'Create account'}
-        </button>
+        <AuthSubmitButton
+          isLoading={isSubmitting}
+          loadingText="Creating account..."
+          text="Create account"
+        />
       </form>
     </AuthCardWrapper>
   );

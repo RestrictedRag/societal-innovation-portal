@@ -15,18 +15,26 @@ import { customType } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 
 export const userRoleEnum = pgEnum('user_role', [
-  'citizen',
-  'university',
-  'corporate',
-  'admin',
+  'CITIZEN',
+  'STUDENT',
+  'FACULTY',
+  'COMPANY_REP',
 ] as const);
 
 export const problemStatusEnum = pgEnum('problem_status', [
   'PENDING',
+  'PENDING_MODERATION',
   'OPEN',
+  'IN_PROGRESS',
   'NEEDS_REVIEW',
   'REJECTED',
   'CLAIMED',
+] as const);
+
+export const mediaStatusEnum = pgEnum('media_status', [
+  'PENDING_MODERATION',
+  'APPROVED',
+  'REJECTED',
 ] as const);
 
 export const problemDomainEnum = pgEnum('problem_domain', [
@@ -84,10 +92,19 @@ const vector = customType<{ data: number[] | null; driverData: string }>({
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
-  role: userRoleEnum('role').notNull(),
-  name: text('name').notNull(),
   email: text('email').notNull().unique(),
-  verified: boolean('verified').notNull().default(false),
+  passwordHash: text('password_hash').notNull(),
+  firstName: text('first_name').notNull(),
+  lastName: text('last_name').notNull(),
+  fullName: text('full_name').notNull(),
+  role: userRoleEnum('role').notNull(),
+  city: text('city').notNull(),
+  state: text('state').notNull(),
+  formattedAddress: text('formatted_address'),
+  country: text('country'),
+  latitude: real('latitude'),
+  longitude: real('longitude'),
+  isVerified: boolean('is_verified').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -98,9 +115,10 @@ export const citizenProblems = pgTable(
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
+    title: text('title').notNull(),
     description: text('description').notNull(),
     imageUrl: text('image_url'),
-    status: problemStatusEnum('status').notNull().default('PENDING'),
+    status: problemStatusEnum('status').notNull().default('PENDING_MODERATION'),
     spamScore: real('spam_score'),
     domain: problemDomainEnum('domain'),
     secondaryTags: problemDomainEnum('secondary_tags').array(),
@@ -118,6 +136,19 @@ export const citizenProblems = pgTable(
     ),
   }),
 );
+
+export const problemMedia = pgTable('problem_media', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  problemId: uuid('problem_id').references(() => citizenProblems.id, { onDelete: 'cascade' }),
+  url: text('url').notNull(),
+  mimeType: text('mime_type'),
+  status: mediaStatusEnum('status').notNull().default('PENDING_MODERATION'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
 
 export const problemEmbeddings = pgTable(
   'problem_embeddings',
@@ -199,7 +230,15 @@ export const citizenProblemsRelations = relations(citizenProblems, ({ one, many 
     fields: [citizenProblems.id],
     references: [problemEmbeddings.problemId],
   }),
+  media: many(problemMedia),
   universityProjects: many(universityProjects),
+}));
+
+export const problemMediaRelations = relations(problemMedia, ({ one }) => ({
+  problem: one(citizenProblems, {
+    fields: [problemMedia.problemId],
+    references: [citizenProblems.id],
+  }),
 }));
 
 export const problemEmbeddingsRelations = relations(problemEmbeddings, ({ one }) => ({
@@ -253,6 +292,7 @@ export const escrowLedgerRelations = relations(escrowLedger, ({ one }) => ({
 
 export type UserRole = (typeof userRoleEnum.enumValues)[number];
 export type ProblemStatus = (typeof problemStatusEnum.enumValues)[number];
+export type MediaStatus = (typeof mediaStatusEnum.enumValues)[number];
 export type ProblemDomain = (typeof problemDomainEnum.enumValues)[number];
 export type UniversityProjectStatus = (typeof universityProjectStatusEnum.enumValues)[number];
 export type EscrowLedgerStatus = (typeof escrowLedgerStatusEnum.enumValues)[number];
@@ -261,6 +301,8 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type CitizenProblem = typeof citizenProblems.$inferSelect;
 export type NewCitizenProblem = typeof citizenProblems.$inferInsert;
+export type ProblemMedia = typeof problemMedia.$inferSelect;
+export type NewProblemMedia = typeof problemMedia.$inferInsert;
 export type ProblemEmbedding = typeof problemEmbeddings.$inferSelect;
 export type NewProblemEmbedding = typeof problemEmbeddings.$inferInsert;
 export type UniversityProject = typeof universityProjects.$inferSelect;

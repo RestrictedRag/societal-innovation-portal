@@ -26,7 +26,7 @@ export function FormInput({
 
   return (
     <div className="space-y-2">
-      <label htmlFor={inputId} className="text-sm font-medium text-slate-200">
+      <label htmlFor={inputId} className="text-sm font-medium text-ink">
         {label}
       </label>
       <div className="relative">
@@ -34,7 +34,7 @@ export function FormInput({
           id={inputId}
           type={resolvedType}
           className={cn(
-            'flex h-11 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-50',
+            'flex h-11 w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-ink placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50',
             error && 'border-red-500 focus-visible:ring-red-500',
             type === 'password' && 'pr-10',
             className
@@ -46,13 +46,13 @@ export function FormInput({
             type="button"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
             onClick={() => setShowPassword((current) => !current)}
-            className="absolute inset-y-0 right-3 flex items-center text-slate-400 transition hover:text-slate-200"
+            className="absolute inset-y-0 right-3 flex items-center text-muted transition hover:text-ink"
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         )}
       </div>
-      {helperText && !error ? <p className="text-xs text-slate-400">{helperText}</p> : null}
+      {helperText && !error ? <p className="text-xs text-muted">{helperText}</p> : null}
       {error ? <p className="text-xs text-red-400">{error}</p> : null}
     </div>
   );

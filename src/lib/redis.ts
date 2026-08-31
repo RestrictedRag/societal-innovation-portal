@@ -1,24 +1,30 @@
 import { Redis } from '@upstash/redis';
 
-const getRequiredEnv = (name: string): string => {
-  const value = process.env[name];
+const getOptionalEnv = (name: string): string | undefined => process.env[name]?.trim();
 
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-
-  return value;
+const redisConfig = {
+  url: getOptionalEnv('UPSTASH_REDIS_REST_URL'),
+  token: getOptionalEnv('UPSTASH_REDIS_REST_TOKEN'),
 };
 
-export const redis = new Redis({
-  url: getRequiredEnv('UPSTASH_REDIS_REST_URL'),
-  token: getRequiredEnv('UPSTASH_REDIS_REST_TOKEN'),
-});
+const redisClient: Redis | null = redisConfig.url && redisConfig.token ? new Redis(redisConfig) : null;
+
+export const redis: Redis | null = redisClient;
 
 export type NotificationPayload = Record<string, unknown>;
 
+function getRedisClient(): Redis {
+  if (!redisClient) {
+    throw new Error(
+      'Redis is not configured. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in your environment before enqueuing jobs.',
+    );
+  }
+
+  return redisClient;
+}
+
 export async function enqueueProblemJob(problemId: string): Promise<number> {
-  return redis.lpush('queue:problem-processing', problemId);
+  return getRedisClient().lpush('queue:problem-processing', problemId);
 }
 
 export async function checkRateLimit(
@@ -26,14 +32,15 @@ export async function checkRateLimit(
   limit = 5,
   ttlSeconds = 60,
 ): Promise<boolean> {
+  const client = getRedisClient();
   const key = `ratelimit:submit:${userId}`;
-  const current = (await redis.get<number>(key)) ?? 0;
+  const current = (await client.get<number>(key)) ?? 0;
 
   if (current >= limit) {
     return false;
   }
 
-  await redis.set(key, current + 1, { ex: ttlSeconds });
+  await client.set(key, current + 1, { ex: ttlSeconds });
   return true;
 }
 
@@ -41,5 +48,5 @@ export async function publishNotification(
   userId: string,
   payload: NotificationPayload,
 ): Promise<number | string> {
-  return redis.publish(`pubsub:notifications:${userId}`, JSON.stringify(payload));
+  return getRedisClient().publish(`pubsub:notifications:${userId}`, JSON.stringify(payload));
 }
