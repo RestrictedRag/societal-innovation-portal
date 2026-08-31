@@ -6,9 +6,7 @@ import { db } from '@/db';
 import { users } from '@/db/schema';
 
 export async function POST(request: Request) {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
+  const { data: session } = await auth.getSession();
 
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authClient } from '@/lib/auth/client';
 import { useRouter } from 'next/navigation';
@@ -10,6 +11,7 @@ import { AuthSubmitButton } from '@/components/auth/AuthSubmitButton';
 import { FormInput } from '@/components/auth/FormInput';
 import { LocationInput } from '@/components/auth/LocationInput';
 import { RoleSelector } from '@/components/auth/RoleSelector';
+import { UniversitySelector } from '@/components/auth/UniversitySelector';
 import { signUpSchema, type SignUpValues } from '@/lib/validations/auth';
 
 const defaultValues: SignUpValues = {
@@ -18,6 +20,7 @@ const defaultValues: SignUpValues = {
   email: '',
   password: '',
   role: 'CITIZEN',
+  universityId: null,
   city: '',
   state: '',
   formattedAddress: '',
@@ -28,6 +31,7 @@ const defaultValues: SignUpValues = {
 
 export default function SignUpPage() {
   const router = useRouter();
+  const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -40,36 +44,58 @@ export default function SignUpPage() {
   });
 
   const role = watch('role');
+  const universityId = watch('universityId');
   const city = watch('city');
   const state = watch('state');
 
   const onSubmit = async (values: SignUpValues) => {
-    const { error: signUpError } = await authClient.signUp.email({
-      email: values.email,
-      password: values.password,
-      name: `${values.firstName} ${values.lastName}`,
-    });
+    try {
+      setFormError(null);
 
-    if (signUpError) {
-      throw new Error(signUpError.message || 'Failed to create account.');
+      const { error: signUpError } = await authClient.signUp.email({
+        email: values.email,
+        password: values.password,
+        name: `${values.firstName} ${values.lastName}`,
+      });
+
+      if (signUpError) {
+        setFormError(signUpError.message || 'Failed to create account.');
+        return;
+      }
+
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          role: values.role,
+          universityId: values.role === 'STUDENT' || values.role === 'FACULTY' ? values.universityId : null,
+          city: values.city,
+          state: values.state,
+          formattedAddress: values.formattedAddress,
+          country: values.country,
+          latitude: values.latitude,
+          longitude: values.longitude,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => ({ message: 'Profile setup failed.' }))) as {
+          message?: string;
+        };
+        setFormError(payload.message ?? 'Profile setup failed.');
+        return;
+      }
+
+      router.push('/feed');
+    } catch (err) {
+      console.error('Signup error:', err);
+      setFormError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.');
     }
-
-    const response = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(values),
-    });
-
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => ({ message: 'Profile setup failed.' }))) as {
-        message?: string;
-      };
-      throw new Error(payload.message ?? 'Profile setup failed.');
-    }
-
-    router.push('/');
   };
 
   return (
@@ -83,6 +109,12 @@ export default function SignUpPage() {
       roleBadge={role}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {formError ? (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+            {formError}
+          </div>
+        ) : null}
+
         <div className="grid gap-4 sm:grid-cols-2">
           <FormInput
             label="First name"
@@ -121,9 +153,25 @@ export default function SignUpPage() {
 
         <RoleSelector
           value={role}
-          onChange={(nextRole) => setValue('role', nextRole, { shouldValidate: true, shouldDirty: true })}
+          onChange={(nextRole) => {
+            setValue('role', nextRole, { shouldValidate: true, shouldDirty: true });
+            if (nextRole === 'CITIZEN' || nextRole === 'COMPANY_REP') {
+              setValue('universityId', null, { shouldValidate: true });
+            }
+          }}
           error={errors.role?.message}
         />
+
+        {role === 'STUDENT' || role === 'FACULTY' ? (
+          <UniversitySelector
+            value={universityId}
+            onChange={(nextUniId) =>
+              setValue('universityId', nextUniId, { shouldValidate: true, shouldDirty: true })
+            }
+            error={errors.universityId?.message}
+            label={role === 'STUDENT' ? 'Student University / College' : 'Faculty Affiliation'}
+          />
+        ) : null}
 
         <LocationInput
           value={[city, state].filter(Boolean).join(', ')}

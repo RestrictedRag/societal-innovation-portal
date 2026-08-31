@@ -7,7 +7,11 @@ export async function reverseGeocodeCoordinates(
   latitude: number,
   longitude: number
 ): Promise<ReverseGeocodeLocation | null> {
-  const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
+  // Geoapify is only ever called server-side (this module and the
+  // /api/geocode/* route handlers), so the key must NOT be exposed to the
+  // client. Prefer the server-only GEOAPIFY_API_KEY; keep the NEXT_PUBLIC_
+  // name as a fallback for backwards compatibility with older env files.
+  const apiKey = process.env.GEOAPIFY_API_KEY ?? process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
 
   if (!apiKey) {
     return null;

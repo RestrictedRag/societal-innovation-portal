@@ -9,16 +9,18 @@ import {
   real,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { customType } from 'drizzle-orm/pg-core';
-import { relations, sql } from 'drizzle-orm';
+import { relations, sql, type SQL } from 'drizzle-orm';
 
 export const userRoleEnum = pgEnum('user_role', [
   'CITIZEN',
   'STUDENT',
   'FACULTY',
   'COMPANY_REP',
+  'ADMIN',
 ] as const);
 
 export const problemStatusEnum = pgEnum('problem_status', [
@@ -62,6 +64,22 @@ export const escrowLedgerStatusEnum = pgEnum('escrow_ledger_status', [
   'REFUNDED',
 ] as const);
 
+const geographyPoint = customType<{ data: string | null; driverData: string }>({
+  dataType() {
+    return 'geography(Point, 4326)';
+  },
+  toDriver(value: string | null | undefined): string {
+    if (value === null || value === undefined) {
+      return 'NULL';
+    }
+
+    return value;
+  },
+  fromDriver(value: string | null) {
+    return value ?? null;
+  },
+});
+
 const vector = customType<{ data: number[] | null; driverData: string }>({
   dataType() {
     return 'vector(1024)';
@@ -90,23 +108,45 @@ const vector = customType<{ data: number[] | null; driverData: string }>({
   },
 });
 
-export const users = pgTable('users', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  email: text('email').notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
-  firstName: text('first_name').notNull(),
-  lastName: text('last_name').notNull(),
-  fullName: text('full_name').notNull(),
-  role: userRoleEnum('role').notNull(),
-  city: text('city').notNull(),
-  state: text('state').notNull(),
-  formattedAddress: text('formatted_address'),
-  country: text('country'),
-  latitude: real('latitude'),
-  longitude: real('longitude'),
-  isVerified: boolean('is_verified').notNull().default(false),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const universities = pgTable(
+  'universities',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull().unique(),
+    location: geographyPoint('location'),
+    serviceRadiusKm: real('service_radius_km'),
+    isVerified: boolean('is_verified').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+);
+
+export const users = pgTable(
+  'users',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    email: text('email').notNull().unique(),
+    passwordHash: text('password_hash'),
+    firstName: text('first_name').notNull(),
+    lastName: text('last_name').notNull(),
+    fullName: text('full_name').notNull(),
+    role: userRoleEnum('role').notNull(),
+    universityId: uuid('university_id').references(() => universities.id, { onDelete: 'set null' }),
+    city: text('city').notNull(),
+    state: text('state').notNull(),
+    formattedAddress: text('formatted_address'),
+    country: text('country'),
+    latitude: real('latitude'),
+    longitude: real('longitude'),
+    isVerified: boolean('is_verified').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    universityMembershipCheck: check(
+      'users_university_membership_check',
+      sql`(((${table.role} = 'STUDENT' OR ${table.role} = 'FACULTY') AND ${table.universityId} IS NOT NULL) OR (${table.role} IN ('CITIZEN', 'COMPANY_REP', 'ADMIN') AND ${table.universityId} IS NULL))`,
+    ),
+  }),
+);
 
 export const citizenProblems = pgTable(
   'citizen_problems',
@@ -166,18 +206,30 @@ export const problemEmbeddings = pgTable(
   }),
 );
 
-export const universityProjects = pgTable('university_projects', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  problemId: uuid('problem_id')
-    .notNull()
-    .references(() => citizenProblems.id, { onDelete: 'cascade' }),
-  universityId: uuid('university_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  status: universityProjectStatusEnum('status').notNull().default('ACTIVE'),
-  budget: numeric('budget', { precision: 16, scale: 2 }).notNull().default('0'),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const universityProjects = pgTable(
+  'university_projects',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    problemId: uuid('problem_id')
+      .notNull()
+      .references(() => citizenProblems.id, { onDelete: 'cascade' }),
+    leadUniversityId: uuid('lead_university_id')
+      .notNull()
+      .references(() => universities.id, { onDelete: 'cascade' }),
+    claimedByUserId: uuid('claimed_by_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'set null' }),
+    status: universityProjectStatusEnum('status').notNull().default('ACTIVE'),
+    budget: numeric('budget', { precision: 16, scale: 2 }).notNull().default('0'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    uniqueLeadUniversityPerProblem: uniqueIndex('university_projects_problem_lead_university_unique').on(
+      table.problemId,
+      table.leadUniversityId,
+    ),
+  }),
+);
 
 export const projectUpdates = pgTable('project_updates', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -207,12 +259,22 @@ export const escrowLedger = pgTable('escrow_ledger', {
   releasedAt: timestamp('released_at', { withTimezone: true }),
 });
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
+  university: one(universities, {
+    fields: [users.universityId],
+    references: [universities.id],
+    relationName: 'universityMembers',
+  }),
   citizenProblems: many(citizenProblems, { relationName: 'userCitizenProblems' }),
   claimedProblems: many(citizenProblems, { relationName: 'claimedProblems' }),
-  universityProjects: many(universityProjects, { relationName: 'universityProjects' }),
+  universityProjects: many(universityProjects, { relationName: 'claimedByUserUniversityProjects' }),
   projectUpdates: many(projectUpdates, { relationName: 'verifiedByProjectUpdates' }),
   escrowLedgers: many(escrowLedger, { relationName: 'corporateEscrowLedgers' }),
+}));
+
+export const universitiesRelations = relations(universities, ({ many, one }) => ({
+  members: many(users, { relationName: 'universityMembers' }),
+  leadProjects: many(universityProjects, { relationName: 'leadUniversityProjects' }),
 }));
 
 export const citizenProblemsRelations = relations(citizenProblems, ({ one, many }) => ({
@@ -253,10 +315,15 @@ export const universityProjectsRelations = relations(universityProjects, ({ one,
     fields: [universityProjects.problemId],
     references: [citizenProblems.id],
   }),
-  university: one(users, {
-    fields: [universityProjects.universityId],
+  leadUniversity: one(universities, {
+    fields: [universityProjects.leadUniversityId],
+    references: [universities.id],
+    relationName: 'leadUniversityProjects',
+  }),
+  claimedByUser: one(users, {
+    fields: [universityProjects.claimedByUserId],
     references: [users.id],
-    relationName: 'universityProjects',
+    relationName: 'claimedByUserUniversityProjects',
   }),
   updates: many(projectUpdates),
   ledgers: many(escrowLedger),

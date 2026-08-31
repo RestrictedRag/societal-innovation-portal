@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { ComplaintForm } from './ComplaintForm';
 
 export function ComplaintButton() {
-  const [isCitizen, setIsCitizen] = useState(true);
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -13,21 +13,21 @@ export function ComplaintButton() {
       try {
         const response = await fetch('/api/auth/session');
         if (!response.ok) {
-          setIsCitizen(false);
+          setIsSignedIn(false);
           return;
         }
 
-        const payload = (await response.json()) as { user?: { role?: string } };
-        setIsCitizen(payload.user?.role === 'CITIZEN');
+        const payload = (await response.json()) as { user?: { email?: string } };
+        setIsSignedIn(Boolean(payload.user));
       } catch {
-        setIsCitizen(false);
+        setIsSignedIn(false);
       }
     };
 
     void loadStatus();
   }, []);
 
-  if (!isCitizen) {
+  if (!isSignedIn) {
     return null;
   }
 
@@ -50,3 +50,4 @@ export function ComplaintButton() {
     </>
   );
 }
+

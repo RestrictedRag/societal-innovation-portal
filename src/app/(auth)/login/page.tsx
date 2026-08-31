@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authClient } from '@/lib/auth/client';
 import { useRouter } from 'next/navigation';
@@ -12,6 +13,7 @@ import { loginSchema, type LoginValues } from '@/lib/validations/auth';
 
 export default function LoginPage() {
   const router = useRouter();
+  const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -25,16 +27,24 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (values: LoginValues) => {
-    const { error } = await authClient.signIn.email({
-      email: values.email,
-      password: values.password,
-    });
+    try {
+      setFormError(null);
 
-    if (error) {
-      throw new Error(error.message || 'Invalid email or password.');
+      const { error } = await authClient.signIn.email({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (error) {
+        setFormError(error.message || 'Invalid email or password.');
+        return;
+      }
+
+      router.push('/feed');
+    } catch (err) {
+      console.error('Login error:', err);
+      setFormError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.');
     }
-
-    router.push('/');
   };
 
   return (
@@ -47,6 +57,12 @@ export default function LoginPage() {
       footerHref="/signup"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {formError ? (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+            {formError}
+          </div>
+        ) : null}
+
         <FormInput
           label="Email"
           type="email"
@@ -70,3 +86,4 @@ export default function LoginPage() {
     </AuthCardWrapper>
   );
 }
+

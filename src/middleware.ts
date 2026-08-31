@@ -9,6 +9,7 @@ export default auth.middleware({
 
 export const config = {
   matcher: [
+    '/feed',
     '/problems/new',
     '/problems/:id/claim',
     '/problems/:id/milestones',
@@ -16,3 +17,4 @@ export const config = {
     '/problems/:id/resolve',
   ],
 };
+

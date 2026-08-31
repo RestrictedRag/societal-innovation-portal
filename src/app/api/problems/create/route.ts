@@ -8,9 +8,7 @@ import { auth } from '@/lib/auth/server';
 import { enqueueProblemJob } from '@/lib/redis';
 
 async function getSessionUserEmail() {
-  const session = await auth.api.getSession({
-    headers: headers(),
-  });
+  const { data: session } = await auth.getSession();
   return session?.user?.email ?? null;
 }
 

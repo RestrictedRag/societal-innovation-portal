@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface AuthCardWrapperProps {
@@ -25,7 +27,15 @@ export function AuthCardWrapper({
 }: AuthCardWrapperProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-canvas p-3 sm:p-6">
-      <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-4 shadow-soft backdrop-blur sm:max-w-2xl sm:p-8">
+      <div className="w-full max-w-md sm:max-w-2xl">
+        <Link
+          href="/"
+          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted transition hover:text-brand-500"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Link>
+        <div className="rounded-2xl border border-border bg-surface p-4 shadow-soft backdrop-blur sm:p-8">
         <div className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-brand-500 sm:text-xs">
@@ -52,7 +62,9 @@ export function AuthCardWrapper({
             {footerLink}
           </a>
         </div>
+        </div>
       </div>
     </div>
   );
 }
+

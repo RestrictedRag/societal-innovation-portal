@@ -22,7 +22,6 @@
     "@tanstack/react-query": "^5.102.8",
     "@upstash/redis": "^1.38.3",
     "ai": "^7.0.84",
-    "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",

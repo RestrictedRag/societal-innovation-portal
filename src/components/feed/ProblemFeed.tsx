@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { authClient } from '@/lib/auth/client';
 
-import { ComplaintButton } from '@/components/complaints/ComplaintButton';
+import { ComplaintForm } from '@/components/complaints/ComplaintForm';
 
 const DEFAULT_RADIUS_KM = 25;
 const DEFAULT_LIMIT = 20;
@@ -26,6 +28,13 @@ type FeedResponse = {
   nextCursor: string | null;
 };
 
+type SessionUser = {
+  name?: string;
+  email?: string;
+};
+
+/* ── Helpers ── */
+
 function formatRelativeTime(value: string) {
   const timestamp = new Date(value).getTime();
   const diffMs = Date.now() - timestamp;
@@ -46,31 +55,95 @@ function formatRelativeTime(value: string) {
 
 function formatDistance(value: number) {
   if (!Number.isFinite(value)) {
-    return '0.0 km away';
+    return '0.0 km';
   }
 
-  return `${value.toFixed(value >= 10 ? 1 : 2)} km away`;
+  return `${value.toFixed(value >= 10 ? 1 : 2)} km`;
 }
 
+function domainLabel(domain: string | null) {
+  if (!domain) return 'Community';
+  return domain
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+const DOMAIN_COLORS: Record<string, string> = {
+  healthcare: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+  agriculture: 'bg-lime-100 text-lime-700 border-lime-200',
+  education: 'bg-blue-100 text-blue-700 border-blue-200',
+  disaster_management: 'bg-red-100 text-red-700 border-red-200',
+  clean_energy: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+  water_management: 'bg-cyan-100 text-cyan-700 border-cyan-200',
+  urban_infrastructure: 'bg-orange-100 text-orange-700 border-orange-200',
+  governance: 'bg-violet-100 text-violet-700 border-violet-200',
+  financial_inclusion: 'bg-pink-100 text-pink-700 border-pink-200',
+  waste_management: 'bg-amber-100 text-amber-700 border-amber-200',
+};
+
+function getDomainColor(domain: string | null) {
+  if (!domain) return 'bg-gray-100 text-gray-600 border-gray-200';
+  return DOMAIN_COLORS[domain] ?? 'bg-gray-100 text-gray-600 border-gray-200';
+}
+
+/* ── Upvote icon (reddit-style arrow) ── */
+function UpvoteIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+      <path d="M10 3l7 7h-4v7H7v-7H3l7-7z" />
+    </svg>
+  );
+}
+
+/* ── Location pin icon ── */
+function PinIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+/* ── Comment icon ── */
+function ProjectIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+      <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+      <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
+    </svg>
+  );
+}
+
+/* ── Plus icon ── */
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+}
+
+/* ── Main component ── */
+
 export function ProblemFeed() {
+  const router = useRouter();
   const [items, setItems] = useState<FeedItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [isComposerOpen, setIsComposerOpen] = useState(false);
-  const [isSubmittingProblem, setIsSubmittingProblem] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
-  const [problemDraft, setProblemDraft] = useState({
-    title: '',
-    description: '',
-    domain: 'healthcare',
-    imageUrl: '',
-  });
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
+
+  /* Complaint modal */
+  const [isComplaintOpen, setIsComplaintOpen] = useState(false);
+
+  /* Session */
+  const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const queryKey = useMemo(() => {
     if (!userLocation) {
@@ -85,6 +158,28 @@ export function ProblemFeed() {
     }).toString();
   }, [userLocation]);
 
+  /* ── Load session ── */
+  useEffect(() => {
+    let isCurrent = true;
+
+    const loadSession = async () => {
+      try {
+        const response = await fetch('/api/auth/session', { cache: 'no-store' });
+        if (!isCurrent) return;
+        if (response.ok) {
+          const payload = (await response.json()) as { user?: SessionUser };
+          setSessionUser(payload.user ?? null);
+        }
+      } catch {
+        if (isCurrent) setSessionUser(null);
+      }
+    };
+
+    void loadSession();
+    return () => { isCurrent = false; };
+  }, []);
+
+  /* ── Geolocate ── */
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
@@ -134,6 +229,7 @@ export function ProblemFeed() {
     );
   }, []);
 
+  /* ── Fetch feed ── */
   const fetchFeed = async (cursor?: string | null) => {
     if (!userLocation) {
       return;
@@ -190,6 +286,7 @@ export function ProblemFeed() {
     void fetchFeed(null);
   }, [queryKey, userLocation]);
 
+  /* ── Infinite scroll ── */
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel || !userLocation) {
@@ -219,270 +316,274 @@ export function ProblemFeed() {
     };
   }, [isLoading, nextCursor, userLocation]);
 
-  const [isSignedIn, setIsSignedIn] = useState(false);
+  /* ── Sign out ── */
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await authClient.signOut();
+      router.push('/login');
+    } catch {
+      setIsSigningOut(false);
+    }
+  };
 
-  useEffect(() => {
-    let isCurrent = true;
-
-    const loadSession = async () => {
-      try {
-        const response = await fetch('/api/auth/session', { cache: 'no-store' });
-        if (!isCurrent) {
-          return;
-        }
-        setIsSignedIn(response.ok);
-      } catch {
-        if (isCurrent) {
-          setIsSignedIn(false);
-        }
-      }
+  /* ── Complaint success handler ── */
+  const handleComplaintSuccess = (problem: {
+    id: string;
+    title: string;
+    description: string;
+    domain: string | null;
+    imageUrl: string | null;
+    createdAt: string;
+  }) => {
+    const newItem: FeedItem = {
+      id: problem.id,
+      title: problem.title,
+      description: problem.description,
+      domain: problem.domain,
+      imageUrl: problem.imageUrl,
+      media: problem.imageUrl ? [problem.imageUrl] : [],
+      upvoteCount: 0,
+      activeProjectCount: 0,
+      createdAt: problem.createdAt,
+      distanceKm: 0,
     };
 
-    void loadSession();
-
-    return () => {
-      isCurrent = false;
-    };
-  }, []);
+    setItems((previous) => [newItem, ...previous]);
+  };
 
   const emptyState = !isInitialLoading && !isLoading && items.length === 0 && !locationError;
   const endOfFeed = !isInitialLoading && !isLoading && nextCursor === null && items.length > 0;
 
-  const handleSubmitProblem = async () => {
-    if (!isSignedIn) {
-      window.location.href = '/login';
-      return;
-    }
-
-    if (!problemDraft.title.trim() || !problemDraft.description.trim()) {
-      setSubmitMessage('Please add a title and a description before submitting.');
-      return;
-    }
-
-    setIsSubmittingProblem(true);
-    setSubmitMessage(null);
-
-    try {
-      const response = await fetch('/api/problems/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: problemDraft.title,
-          description: problemDraft.description,
-          domain: problemDraft.domain,
-          imageUrl: problemDraft.imageUrl || null,
-        }),
-      });
-
-      const payload = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(payload?.error ?? 'Unable to submit problem.');
-      }
-
-      const newItem: FeedItem = {
-        id: payload.problem.id,
-        title: payload.problem.title,
-        description: payload.problem.description,
-        domain: payload.problem.domain ?? null,
-        imageUrl: payload.problem.imageUrl ?? null,
-        media: payload.problem.imageUrl ? [payload.problem.imageUrl] : [],
-        upvoteCount: 0,
-        activeProjectCount: 0,
-        createdAt: payload.problem.createdAt,
-        distanceKm: 0,
-      };
-
-      setItems((previous) => [newItem, ...previous]);
-      setProblemDraft({ title: '', description: '', domain: 'healthcare', imageUrl: '' });
-      setIsComposerOpen(false);
-      setSubmitMessage('Your problem has been submitted and will appear in the feed after review.');
-    } catch (error) {
-      setSubmitMessage(error instanceof Error ? error.message : 'Unable to submit your problem.');
-    } finally {
-      setIsSubmittingProblem(false);
-    }
-  };
+  /* ── Derive user initials for avatar ── */
+  const userInitials = sessionUser?.name
+    ? sessionUser.name
+        .split(' ')
+        .map((part) => part[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : sessionUser?.email
+      ? sessionUser.email[0].toUpperCase()
+      : '?';
 
   return (
-    <main className="min-h-screen bg-canvas px-4 py-8 text-ink">
-      <div className="mx-auto max-w-3xl">
-        <header className="mb-8 flex items-center justify-between gap-4 rounded-2xl border border-border bg-surface p-4 shadow-soft">
-          <div>
-            <p className="text-[0.65rem] font-medium uppercase tracking-[0.22em] text-muted">Nearby issues</p>
-            <h1 className="mt-1 text-2xl font-bold text-ink">Civic feed</h1>
-          </div>
-          <ComplaintButton />
-        </header>
-
-        {isComposerOpen ? (
-          <div className="mb-6 rounded-2xl border border-border bg-surface p-4 shadow-soft">
-            <h2 className="text-lg font-semibold text-ink">Share a local issue</h2>
-            <div className="mt-4 space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-muted">Title</label>
-                <input
-                  value={problemDraft.title}
-                  onChange={(event) => setProblemDraft((draft) => ({ ...draft, title: event.target.value }))}
-                  className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-ink outline-none ring-0 placeholder:text-muted"
-                  placeholder="Broken streetlight near the bus stop"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-muted">Category</label>
-                <select
-                  value={problemDraft.domain}
-                  onChange={(event) => setProblemDraft((draft) => ({ ...draft, domain: event.target.value }))}
-                  className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-ink outline-none"
-                >
-                  <option value="healthcare">Healthcare</option>
-                  <option value="agriculture">Agriculture</option>
-                  <option value="education">Education</option>
-                  <option value="disaster_management">Disaster Management</option>
-                  <option value="clean_energy">Clean Energy</option>
-                  <option value="water_management">Water Management</option>
-                  <option value="urban_infrastructure">Urban Infrastructure</option>
-                  <option value="governance">Governance</option>
-                  <option value="financial_inclusion">Financial Inclusion</option>
-                  <option value="waste_management">Waste Management</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-muted">Description</label>
-                <textarea
-                  value={problemDraft.description}
-                  onChange={(event) => setProblemDraft((draft) => ({ ...draft, description: event.target.value }))}
-                  rows={5}
-                  className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-ink outline-none placeholder:text-muted"
-                  placeholder="Describe the issue, the impact, and any nearby landmarks."
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-medium text-muted">Image URL (optional)</label>
-                <input
-                  value={problemDraft.imageUrl}
-                  onChange={(event) => setProblemDraft((draft) => ({ ...draft, imageUrl: event.target.value }))}
-                  className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-ink outline-none placeholder:text-muted"
-                  placeholder="https://..."
-                />
-              </div>
-
-              {submitMessage ? (
-                <div className="rounded-xl border border-border bg-canvas p-3 text-sm text-muted">
-                  {submitMessage}
-                </div>
-              ) : null}
-
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsComposerOpen(false)}
-                  className="rounded-full border border-border bg-white px-3 py-2 text-sm font-medium text-muted"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSubmitProblem}
-                  disabled={isSubmittingProblem}
-                  className="rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isSubmittingProblem ? 'Submitting...' : 'Submit issue'}
-                </button>
-              </div>
+    <div className="min-h-screen bg-canvas">
+      {/* ── Sticky top navbar ── */}
+      <nav className="sticky top-0 z-30 border-b border-border bg-white/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
+          {/* Brand */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 shadow-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-ink leading-tight">Civic Feed</h1>
+              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted">Nearby Issues</p>
             </div>
           </div>
-        ) : null}
 
+          {/* User area */}
+          <div className="flex items-center gap-3">
+            {sessionUser ? (
+              <>
+                <div className="hidden items-center gap-2 sm:flex">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-accent-400 text-xs font-bold text-white">
+                    {userInitials}
+                  </div>
+                  <span className="max-w-[120px] truncate text-sm font-medium text-ink">
+                    {sessionUser.name || sessionUser.email}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  disabled={isSigningOut}
+                  className="rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-muted transition hover:border-rose-300 hover:text-rose-600 disabled:opacity-50"
+                >
+                  {isSigningOut ? 'Signing out…' : 'Sign out'}
+                </button>
+              </>
+            ) : null}
+          </div>
+        </div>
+      </nav>
+
+      {/* ── Main content ── */}
+      <main className="mx-auto max-w-3xl px-4 py-6">
+        {/* Location / fetch errors */}
         {locationError ? (
-          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          <div className="mb-5 flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+            <PinIcon className="shrink-0 text-amber-500" />
             {locationError}
           </div>
         ) : null}
 
         {fetchError ? (
-          <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+          <div className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
             {fetchError}
           </div>
         ) : null}
 
+        {/* ── Feed cards ── */}
         <div className="space-y-4">
-          {items.map((item) => (
+          {items.map((item, index) => (
             <article
               key={item.id}
-              className="overflow-hidden rounded-2xl border border-border bg-surface shadow-soft"
+              className="group overflow-hidden rounded-2xl border border-border bg-white shadow-sm transition-shadow hover:shadow-soft"
+              style={{ animationDelay: `${Math.min(index * 50, 300)}ms` }}
             >
-              <div className="flex items-start justify-between gap-4 px-4 py-4">
-                <div>
-                  <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-brand-500">
-                    {item.domain ?? 'Community issue'}
-                  </p>
-                  <h2 className="mt-2 text-xl font-semibold text-ink">{item.title}</h2>
+              {/* Card header */}
+              <div className="flex items-start gap-4 px-5 pt-5 pb-3">
+                {/* Upvote column (reddit-style) */}
+                <div className="flex flex-col items-center gap-0.5 pt-0.5">
+                  <button
+                    type="button"
+                    className="rounded p-1 text-muted transition hover:bg-brand-50 hover:text-brand-500"
+                    aria-label="Upvote"
+                  >
+                    <UpvoteIcon />
+                  </button>
+                  <span className="text-xs font-bold text-ink tabular-nums">{item.upvoteCount}</span>
                 </div>
-                <span className="rounded-full border border-border bg-canvas px-2.5 py-1 text-xs text-muted">
-                  {formatDistance(item.distanceKm)}
-                </span>
+
+                {/* Content */}
+                <div className="min-w-0 flex-1">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] ${getDomainColor(item.domain)}`}>
+                      {domainLabel(item.domain)}
+                    </span>
+                    <span className="flex items-center gap-1 text-[11px] text-muted">
+                      <PinIcon className="text-muted/60" />
+                      {formatDistance(item.distanceKm)}
+                    </span>
+                    <span className="text-[11px] text-muted/60">•</span>
+                    <time className="text-[11px] text-muted" dateTime={item.createdAt}>
+                      {formatRelativeTime(item.createdAt)}
+                    </time>
+                  </div>
+
+                  <h2 className="text-base font-semibold text-ink leading-snug group-hover:text-brand-600 transition-colors">
+                    {item.title}
+                  </h2>
+                </div>
               </div>
 
+              {/* Image */}
               {item.imageUrl ? (
-                <div className="border-y border-border bg-canvas">
+                <div className="mx-5 mb-3 overflow-hidden rounded-xl border border-border/50">
                   <img
                     src={item.imageUrl}
                     alt={item.title}
-                    className="h-56 w-full object-cover"
+                    className="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                   />
                 </div>
               ) : null}
 
-              <div className="space-y-4 px-4 py-4">
-                <p className="text-sm leading-6 text-muted">{item.description}</p>
+              {/* Description */}
+              <div className="px-5 pb-4">
+                <p className="text-sm leading-relaxed text-muted line-clamp-3">{item.description}</p>
+              </div>
 
-                <div className="flex items-center justify-between gap-3 text-xs text-muted">
-                  <div className="flex items-center gap-4">
-                    <span>▲ {item.upvoteCount}</span>
-                    <span>{item.activeProjectCount} active projects</span>
-                  </div>
-                  <time dateTime={item.createdAt}>{formatRelativeTime(item.createdAt)}</time>
-                </div>
+              {/* Card footer */}
+              <div className="flex items-center gap-4 border-t border-border/50 bg-canvas/40 px-5 py-2.5">
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-muted transition hover:bg-brand-50 hover:text-brand-600"
+                >
+                  <ProjectIcon />
+                  {item.activeProjectCount} project{item.activeProjectCount !== 1 ? 's' : ''}
+                </button>
               </div>
             </article>
           ))}
         </div>
 
+        {/* ── Empty state ── */}
         {emptyState ? (
-          <div className="mt-8 rounded-2xl border border-border bg-surface p-8 text-center shadow-soft">
+          <div className="mt-12 flex flex-col items-center rounded-2xl border border-border bg-white p-10 text-center shadow-sm">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-50 to-accent-50">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-8 w-8 text-brand-400">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+              </svg>
+            </div>
             <h2 className="text-xl font-semibold text-ink">No issues nearby yet</h2>
-            <p className="mt-2 text-sm text-muted">
-              Nothing is open in your current area yet. Try moving a little or check back soon.
+            <p className="mt-2 max-w-sm text-sm text-muted">
+              Nothing is open in your area. Be the first to report a civic issue!
             </p>
+            <button
+              type="button"
+              onClick={() => setIsComplaintOpen(true)}
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 hover:shadow-md"
+            >
+              <PlusIcon className="h-4 w-4" />
+              Report an issue
+            </button>
           </div>
         ) : null}
 
+        {/* ── End of feed ── */}
         {endOfFeed ? (
-          <div className="mt-6 text-center text-sm text-muted">You’ve reached the end of the feed.</div>
+          <div className="mt-8 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs font-medium text-muted">You've reached the end</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
         ) : null}
 
+        {/* ── Loading skeletons ── */}
         {isLoading ? (
           <div className="mt-4 space-y-4" aria-live="polite">
             {Array.from({ length: 2 }).map((_, index) => (
-              <div key={index} className="animate-pulse rounded-2xl border border-border bg-surface p-4 shadow-soft">
-                <div className="h-3 w-24 rounded bg-border" />
-                <div className="mt-3 h-6 w-3/4 rounded bg-border" />
-                <div className="mt-4 h-40 rounded-lg bg-canvas" />
-                <div className="mt-4 h-4 w-full rounded bg-canvas" />
-                <div className="mt-2 h-4 w-5/6 rounded bg-canvas" />
+              <div key={index} className="animate-pulse rounded-2xl border border-border bg-white p-5 shadow-sm">
+                <div className="flex gap-4">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="h-6 w-6 rounded bg-border/60" />
+                    <div className="h-3 w-4 rounded bg-border/60" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="mb-3 flex gap-2">
+                      <div className="h-5 w-20 rounded-full bg-border/60" />
+                      <div className="h-5 w-14 rounded-full bg-border/40" />
+                    </div>
+                    <div className="h-5 w-3/4 rounded bg-border/60" />
+                    <div className="mt-4 h-40 rounded-xl bg-canvas" />
+                    <div className="mt-3 h-4 w-full rounded bg-canvas" />
+                    <div className="mt-2 h-4 w-5/6 rounded bg-canvas" />
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         ) : null}
 
         <div ref={sentinelRef} className="h-1" aria-hidden="true" />
-      </div>
-    </main>
+      </main>
+
+      {/* ── Floating Action Button ── */}
+      <button
+        type="button"
+        onClick={() => setIsComplaintOpen(true)}
+        className="fixed bottom-6 right-6 z-20 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-elevated transition-all hover:scale-105 hover:shadow-glow-lg active:scale-95 sm:h-auto sm:w-auto sm:gap-2 sm:rounded-xl sm:px-5 sm:py-3"
+        aria-label="Add Complaint"
+      >
+        <PlusIcon className="h-6 w-6 sm:h-5 sm:w-5" />
+        <span className="hidden text-sm font-semibold sm:inline">Add Complaint</span>
+      </button>
+
+      {/* ── Complaint modal ── */}
+      {isComplaintOpen ? (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/10 p-4 backdrop-blur-sm">
+          <ComplaintForm
+            onClose={() => setIsComplaintOpen(false)}
+            onSuccess={handleComplaintSuccess}
+          />
+        </div>
+      ) : null}
+    </div>
   );
 }
