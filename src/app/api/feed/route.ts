@@ -7,6 +7,7 @@ import {
   MAX_FEED_LIMIT,
 } from '@/lib/constants';
 import { buildNearbyProblemsGeoQuery } from '@/lib/geo-query';
+import { auth } from '@/lib/auth/server';
 
 type FeedCursor = {
   createdAt: string;
@@ -88,11 +89,44 @@ export async function GET(request: Request) {
   });
 
   try {
-    const statusClause = `cp.status IN ('OPEN', 'IN_PROGRESS')`;
+    // Retrieve authenticated user if session exists
+    let currentUserId: string | null = null;
+    let sessionUserEmail: string | null = null;
+    try {
+      const { data: session } = await auth.getSession();
+      sessionUserEmail = session?.user?.email ?? null;
+      if (sessionUserEmail) {
+        const userRows = await sql`
+          SELECT id FROM users WHERE email = ${sessionUserEmail} LIMIT 1
+        `;
+        if (userRows.length > 0) {
+          currentUserId = userRows[0].id;
+        }
+      }
+    } catch (authError) {
+      console.warn('Feed route: auth session check skipped/failed:', authError);
+    }
+
+    console.log('[FEED_ROUTE_DEBUG] incoming request:', {
+      lat,
+      lng,
+      radiusKm,
+      limit,
+      sessionUserEmail,
+      currentUserId,
+    });
+
+    const statusClause = currentUserId
+      ? `(cp.status IN ('OPEN', 'IN_PROGRESS') OR (cp.status = 'PENDING_MODERATION' AND cp.user_id = '${currentUserId}'))`
+      : `cp.status IN ('OPEN', 'IN_PROGRESS')`;
 
     const query = `
       SELECT
         cp.id,
+        cp.client_id,
+        cp.status,
+        cp.latitude,
+        cp.longitude,
         COALESCE(cp.title, LEFT(cp.description, 120)) AS title,
         LEFT(cp.description, 200) AS description,
         cp.domain,
@@ -109,13 +143,14 @@ export async function GET(request: Request) {
       FROM citizen_problems cp
       LEFT JOIN users u ON u.id = cp.user_id
       WHERE ${statusClause}
-        AND u.latitude IS NOT NULL
-        AND u.longitude IS NOT NULL
+        AND (${geo.effectiveLatitude} IS NOT NULL AND ${geo.effectiveLongitude} IS NOT NULL)
         ${geo.distanceFilter}
       ${cursor ? 'AND (cp.created_at, cp.id) < ($4, $5)' : ''}
       ORDER BY cp.created_at DESC, cp.id DESC
       LIMIT $${cursor ? 6 : 4};
     `;
+
+    console.log('[FEED_ROUTE_DEBUG] statusClause:', statusClause);
 
     const values = cursor
       ? [lng, lat, radiusKm * 1000, cursor.createdAt, cursor.id, limit]
@@ -123,6 +158,8 @@ export async function GET(request: Request) {
 
     const rows = (await sql.unsafe(query, ...(values as any[]))) as Array<{
       id: string;
+      client_id: string | null;
+      status: string;
       title: string;
       description: string;
       domain: string | null;
@@ -133,8 +170,11 @@ export async function GET(request: Request) {
       distance_km: number;
     }>;
 
+    console.log('[FEED_ROUTE_DEBUG] rows returned count:', rows.length, rows.map(r => ({ id: r.id, status: r.status, title: r.title })));
+
     const items = rows.map((row) => ({
       id: row.id,
+      clientId: row.client_id ?? undefined,
       title: String(row.title ?? 'Community issue'),
       description: truncateDescription(row.description),
       domain: row.domain ?? null,
@@ -144,6 +184,7 @@ export async function GET(request: Request) {
       activeProjectCount: Number(row.active_project_count ?? 0),
       createdAt: row.created_at,
       distanceKm: Number(row.distance_km ?? 0),
+      status: row.status === 'PENDING_MODERATION' ? ('pending_moderation' as const) : ('confirmed' as const),
     }));
 
     const nextCursor = items.length === limit && items.length > 0

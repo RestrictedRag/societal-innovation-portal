@@ -41,7 +41,7 @@ export function normalizeProblemImageUrl(value: unknown): string | null {
 export function getComplaintValidationError(
   title: string,
   description: string,
-  location: { lat: number; lng: number } | null,
+  location?: { lat: number; lng: number } | null,
 ): string | null {
   if (!isTitleValid(title)) {
     return 'Title is required.';
@@ -51,8 +51,8 @@ export function getComplaintValidationError(
     return 'Description must be at least 30 words.';
   }
 
-  if (!location || !Number.isFinite(location.lat) || !Number.isFinite(location.lng)) {
-    return 'Please choose the location of the problem before submitting.';
+  if (location && (!Number.isFinite(location.lat) || !Number.isFinite(location.lng))) {
+    return 'The provided coordinates are invalid.';
   }
 
   return null;

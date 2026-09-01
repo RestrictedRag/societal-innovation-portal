@@ -9,18 +9,19 @@ import {
   MAX_IMAGE_COMPRESSION_QUALITY,
   PNG_IMAGE_QUALITY,
 } from '@/lib/constants';
+import {
+  type ConfirmedProblem,
+  type OptimisticSubmission,
+  saveStoredSubmission,
+  submitWithRetry,
+} from '@/lib/optimistic-submissions';
 import { countWords, getComplaintValidationError } from '@/lib/problem-validation';
 
 export type ComplaintFormProps = {
   onClose?: () => void;
-  onSuccess?: (problem: {
-    id: string;
-    title: string;
-    description: string;
-    domain: string | null;
-    imageUrl: string | null;
-    createdAt: string;
-  }) => void;
+  onOptimisticSubmit?: (item: OptimisticSubmission) => void;
+  onSuccess?: (problem: ConfirmedProblem) => void;
+  onFail?: (failedItem: OptimisticSubmission) => void;
 };
 
 export type Coordinates = {
@@ -37,7 +38,7 @@ export type AttachedMediaItem = {
 
 export const formatCoords = (location: Coordinates) => `${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`;
 
-export function useComplaintForm({ onClose, onSuccess }: ComplaintFormProps) {
+export function useComplaintForm({ onClose, onOptimisticSubmit, onSuccess, onFail }: ComplaintFormProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [domain, setDomain] = useState('healthcare');
@@ -361,67 +362,57 @@ export function useComplaintForm({ onClose, onSuccess }: ComplaintFormProps) {
       return;
     }
 
-    setIsSubmitting(true);
+    const finalImageUrl =
+      attachedMedia.find((item) => item.storageUrl)?.storageUrl ?? imageUrl ?? null;
+    const mediaPayload = attachedMedia
+      .filter((item) => item.storageUrl)
+      .map((item) => item.storageUrl as string);
 
-    try {
-      const finalImageUrl =
-        attachedMedia.find((item) => item.storageUrl)?.storageUrl ?? imageUrl ?? null;
-      const mediaPayload = attachedMedia
-        .filter((item) => item.storageUrl)
-        .map((item) => item.storageUrl as string);
-      const response = await fetch('/api/problems/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: title.trim(),
-          description: description.trim(),
-          domain,
-          location,
-          media: mediaPayload.length ? mediaPayload : finalImageUrl ? [finalImageUrl] : [],
-          imageUrl: finalImageUrl,
-        }),
-      });
+    const clientId = crypto.randomUUID();
+    const backupId = `backup-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
-      const payload = (await response.json().catch(() => null)) as {
-        error?: string;
-        problem?: {
-          id: string;
-          title: string;
-          description: string;
-          domain: string | null;
-          imageUrl: string | null;
-          createdAt: string;
-        };
-      };
+    const optimisticSubmission: OptimisticSubmission = {
+      backupId,
+      clientId,
+      title: title.trim(),
+      description: description.trim(),
+      domain,
+      imageUrl: finalImageUrl,
+      media: mediaPayload.length ? mediaPayload : finalImageUrl ? [finalImageUrl] : [],
+      location: location ? { lat: location.lat, lng: location.lng } : null,
+      latitude: location?.lat ?? null,
+      longitude: location?.lng ?? null,
+      createdAt: new Date().toISOString(),
+      status: 'pending',
+      retryCount: 0,
+    };
 
-      if (!response.ok) {
-        const detail = payload?.error ?? 'Unable to submit your complaint.';
-        const isDev = process.env.NODE_ENV !== 'production';
-        throw new Error(isDev ? `${detail} (HTTP ${response.status})` : detail);
-      }
+    // 1. Persist to localStorage immediately
+    saveStoredSubmission(optimisticSubmission);
 
-      const createdProblem = payload?.problem;
-      if (createdProblem) {
-        onSuccess?.(createdProblem);
-      }
+    // 2. Immediately render optimistically in UI
+    onOptimisticSubmit?.(optimisticSubmission);
 
-      setStatusMessage('Complaint submitted successfully.');
-      setTitle('');
-      setDescription('');
-      setImageUrl('');
-      setLocation(null);
-      setLocationDisplay('');
-      setLocationDisplayNote(null);
-      setAttachedMedia([]);
-      setDomain('healthcare');
-      onClose?.();
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Unable to submit your complaint.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    // 3. Reset form and close modal immediately
+    setTitle('');
+    setDescription('');
+    setImageUrl('');
+    setLocation(null);
+    setLocationDisplay('');
+    setLocationDisplayNote(null);
+    setAttachedMedia([]);
+    setDomain('healthcare');
+    onClose?.();
+
+    // 4. Execute background submission with retries
+    void submitWithRetry(optimisticSubmission, {
+      onSuccess: (confirmed) => {
+        onSuccess?.(confirmed);
+      },
+      onFail: (failedItem) => {
+        onFail?.(failedItem);
+      },
+    });
   };
 
   return {

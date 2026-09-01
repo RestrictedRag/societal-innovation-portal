@@ -152,6 +152,7 @@ export const citizenProblems = pgTable(
   'citizen_problems',
   {
     id: uuid('id').primaryKey().defaultRandom(),
+    clientId: uuid('client_id').notNull().unique().defaultRandom(),
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
@@ -163,6 +164,8 @@ export const citizenProblems = pgTable(
     domain: problemDomainEnum('domain'),
     secondaryTags: problemDomainEnum('secondary_tags').array(),
     claimedBy: uuid('claimed_by').references(() => users.id, { onDelete: 'set null' }),
+    latitude: real('latitude'),
+    longitude: real('longitude'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .notNull()

@@ -1,4 +1,3 @@
-import { headers } from 'next/headers';
 import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
@@ -37,10 +36,18 @@ export async function POST(request: Request) {
     }
 
     const payload = await request.json();
+    const rawClientId = typeof payload?.clientId === 'string' ? payload.clientId.trim() : null;
+    const clientId = rawClientId || crypto.randomUUID();
+
     const title = String(payload?.title ?? '').trim();
     const description = String(payload?.description ?? '').trim();
     const domain = String(payload?.domain ?? '').trim();
     const imageUrl = typeof payload?.imageUrl === 'string' ? payload.imageUrl.trim() : null;
+    const rawLat = payload?.latitude ?? payload?.location?.lat;
+    const rawLng = payload?.longitude ?? payload?.location?.lng;
+    const latitude = typeof rawLat === 'number' && Number.isFinite(rawLat) ? rawLat : null;
+    const longitude = typeof rawLng === 'number' && Number.isFinite(rawLng) ? rawLng : null;
+
     const mediaUrls = Array.isArray(payload?.media)
       ? payload.media
           .map((entry: unknown) => (typeof entry === 'string' ? entry.trim() : ''))
@@ -49,6 +56,28 @@ export async function POST(request: Request) {
 
     if (!title || !description) {
       return NextResponse.json({ error: 'Title and description are required.' }, { status: 400 });
+    }
+
+    // 1. Fast existence check for idempotency
+    const existing = await db.query.citizenProblems.findFirst({
+      where: eq(citizenProblems.clientId, clientId),
+    });
+
+    if (existing) {
+      return NextResponse.json({
+        message: 'Problem already submitted.',
+        problem: {
+          id: existing.id,
+          clientId: existing.clientId,
+          title: existing.title,
+          description: existing.description,
+          domain: existing.domain,
+          imageUrl: existing.imageUrl,
+          latitude: existing.latitude,
+          longitude: existing.longitude,
+          createdAt: existing.createdAt.toISOString(),
+        },
+      }, { status: 200 });
     }
 
     const user = await db.query.users.findFirst({ where: eq(users.email, userEmail) });
@@ -62,27 +91,62 @@ export async function POST(request: Request) {
 
     const userId = user.id;
 
-    let createdProblem: { id: string; createdAt: Date } | null = null;
+    let createdProblem: { id: string; clientId: string; createdAt: Date } | null = null;
     try {
       [createdProblem] = await db
         .insert(citizenProblems)
         .values({
+          clientId,
           userId,
           title,
           description,
           imageUrl: imageUrl || null,
+          latitude,
+          longitude,
           status: 'PENDING_MODERATION',
           domain: domain ? (domain as any) : null,
         })
-        .returning({ id: citizenProblems.id, createdAt: citizenProblems.createdAt });
-    } catch (error) {
+        .returning({
+          id: citizenProblems.id,
+          clientId: citizenProblems.clientId,
+          createdAt: citizenProblems.createdAt,
+        });
+    } catch (insertError: any) {
+      const cause = insertError?.cause ?? insertError;
+      const pgCode = cause?.code || insertError?.code;
+
+      // Handle race condition: concurrent request with same clientId
+      if (pgCode === '23505' || String(cause?.message || insertError?.message).includes('duplicate key')) {
+        const raceExisting = await db.query.citizenProblems.findFirst({
+          where: eq(citizenProblems.clientId, clientId),
+        });
+
+        if (raceExisting) {
+          return NextResponse.json({
+            message: 'Problem already submitted.',
+            problem: {
+              id: raceExisting.id,
+              clientId: raceExisting.clientId,
+              title: raceExisting.title,
+              description: raceExisting.description,
+              domain: raceExisting.domain,
+              imageUrl: raceExisting.imageUrl,
+              latitude: raceExisting.latitude,
+              longitude: raceExisting.longitude,
+              createdAt: raceExisting.createdAt.toISOString(),
+            },
+          }, { status: 200 });
+        }
+      }
+
       console.error('Problem create failed: DB insert', {
         userId,
+        clientId,
         title,
         domain,
-        error: describeError(error),
+        error: describeError(insertError),
       });
-      throw error;
+      throw insertError;
     }
 
     const mediaEntries = [...new Set([...(imageUrl ? [imageUrl] : []), ...mediaUrls])];
@@ -102,40 +166,36 @@ export async function POST(request: Request) {
           mediaCount: mediaEntries.length,
           error: describeError(error),
         });
-        throw error;
       }
     }
 
     try {
       await enqueueProblemJob(createdProblem!.id);
     } catch (queueError) {
-      console.error('Problem create failed: Redis enqueue', {
+      console.warn('Problem create: Redis job queue warning', {
         problemId: createdProblem?.id,
         userId,
         error: describeError(queueError),
       });
-      return NextResponse.json(
-        {
-          error:
-            queueError instanceof Error
-              ? queueError.message
-              : 'Redis job queue is not configured. Please add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN before submitting problems.',
-        },
-        { status: 500 },
-      );
     }
 
-    return NextResponse.json({
-      message: 'Problem submitted successfully.',
-      problem: {
-        id: createdProblem!.id,
-        title,
-        description,
-        domain,
-        imageUrl: imageUrl || null,
-        createdAt: createdProblem!.createdAt,
+    return NextResponse.json(
+      {
+        message: 'Problem submitted successfully.',
+        problem: {
+          id: createdProblem!.id,
+          clientId: createdProblem!.clientId,
+          title,
+          description,
+          domain,
+          imageUrl: imageUrl || null,
+          latitude,
+          longitude,
+          createdAt: createdProblem!.createdAt.toISOString(),
+        },
       },
-    });
+      { status: 201 },
+    );
   } catch (error) {
     console.error('Problem create failed: unhandled error', {
       error: describeError(error),

@@ -2,9 +2,16 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { AlertCircle, Loader2, RefreshCw } from 'lucide-react';
 import { authClient } from '@/lib/auth/client';
 
 import { ComplaintForm } from '@/components/complaints/ComplaintForm';
+import {
+  type ConfirmedProblem,
+  type OptimisticSubmission,
+  getStoredSubmissions,
+  submitWithRetry,
+} from '@/lib/optimistic-submissions';
 
 const DEFAULT_RADIUS_KM = 25;
 const DEFAULT_LIMIT = 20;
@@ -12,6 +19,8 @@ const LOCATION_STORAGE_KEY = 'civic-feed-location-v1';
 
 type FeedItem = {
   id: string;
+  clientId?: string;
+  backupId?: string;
   title: string;
   description: string;
   domain: string | null;
@@ -21,6 +30,9 @@ type FeedItem = {
   activeProjectCount: number;
   createdAt: string;
   distanceKm: number;
+  status?: 'pending' | 'confirmed' | 'failed' | 'pending_moderation';
+  errorMessage?: string;
+  isAuthError?: boolean;
 };
 
 type FeedResponse = {
@@ -143,6 +155,7 @@ export function ProblemFeed() {
 
   /* Session */
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
+  const [sessionResolved, setSessionResolved] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const queryKey = useMemo(() => {
@@ -164,7 +177,10 @@ export function ProblemFeed() {
 
     const loadSession = async () => {
       try {
-        const response = await fetch('/api/auth/session', { cache: 'no-store' });
+        const response = await fetch('/api/auth/session', {
+          credentials: 'include',
+          cache: 'no-store',
+        });
         if (!isCurrent) return;
         if (response.ok) {
           const payload = (await response.json()) as { user?: SessionUser };
@@ -172,6 +188,8 @@ export function ProblemFeed() {
         }
       } catch {
         if (isCurrent) setSessionUser(null);
+      } finally {
+        if (isCurrent) setSessionResolved(true);
       }
     };
 
@@ -250,7 +268,10 @@ export function ProblemFeed() {
         params.set('cursor', cursor);
       }
 
-      const response = await fetch(`/api/feed?${params.toString()}`);
+      const response = await fetch(`/api/feed?${params.toString()}`, {
+        credentials: 'include',
+        cache: 'no-store',
+      });
       if (!response.ok) {
         throw new Error('Unable to load the feed.');
       }
@@ -258,15 +279,36 @@ export function ProblemFeed() {
       const data = (await response.json()) as FeedResponse;
 
       setItems((previous) => {
-        const merged = cursor ? [...previous, ...data.items] : data.items;
+        const pendingOrFailed = previous.filter(
+          (item) => item.status === 'pending' || item.status === 'failed',
+        );
+
+        const serverItems = data.items;
+        const serverClientIds = new Set(serverItems.map((s) => s.clientId).filter(Boolean));
+        const serverIds = new Set(serverItems.map((s) => s.id));
+
+        const remainingPending = pendingOrFailed.filter(
+          (p) =>
+            (!p.clientId || !serverClientIds.has(p.clientId)) &&
+            !serverIds.has(p.id) &&
+            (!p.backupId || !serverIds.has(p.backupId)),
+        );
+
+        const merged = cursor
+          ? [...previous, ...serverItems]
+          : [...remainingPending, ...serverItems];
+
         const seen = new Set<string>();
-        return merged.filter((item) => {
-          if (seen.has(item.id)) {
+        const finalItems = merged.filter((item) => {
+          const key = item.clientId || item.id || item.backupId;
+          if (!key || seen.has(key)) {
             return false;
           }
-          seen.add(item.id);
+          seen.add(key);
           return true;
         });
+
+        return finalItems;
       });
 
       setNextCursor(data.nextCursor ?? null);
@@ -279,12 +321,12 @@ export function ProblemFeed() {
   };
 
   useEffect(() => {
-    if (!userLocation || !queryKey) {
+    if (!sessionResolved || !userLocation || !queryKey) {
       return;
     }
 
     void fetchFeed(null);
-  }, [queryKey, userLocation]);
+  }, [sessionResolved, queryKey, userLocation]);
 
   /* ── Infinite scroll ── */
   useEffect(() => {
@@ -316,6 +358,46 @@ export function ProblemFeed() {
     };
   }, [isLoading, nextCursor, userLocation]);
 
+  /* ── Resume pending submissions from localStorage on mount ── */
+  useEffect(() => {
+    const stored = getStoredSubmissions();
+    if (stored.length > 0) {
+      const storedFeedItems: FeedItem[] = stored.map((s) => ({
+        id: s.backupId,
+        backupId: s.backupId,
+        clientId: s.clientId,
+        title: s.title,
+        description: s.description,
+        domain: s.domain,
+        imageUrl: s.imageUrl,
+        media: s.media,
+        upvoteCount: 0,
+        activeProjectCount: 0,
+        createdAt: s.createdAt,
+        distanceKm: 0,
+        status: s.status,
+        errorMessage: s.errorMessage,
+        isAuthError: s.isAuthError,
+      }));
+
+      setItems((prev) => {
+        const existingIds = new Set(prev.map((item) => item.clientId || item.id));
+        const newOnes = storedFeedItems.filter((item) => item.clientId && !existingIds.has(item.clientId));
+        return [...newOnes, ...prev];
+      });
+
+      // Auto-retry any items that were left in 'pending' state
+      stored.forEach((s) => {
+        if (s.status === 'pending') {
+          void submitWithRetry(s, {
+            onSuccess: (confirmed) => handleConfirmedSuccess(s.clientId, confirmed),
+            onFail: (failed) => handleOptimisticFail(failed),
+          });
+        }
+      });
+    }
+  }, []);
+
   /* ── Sign out ── */
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -327,32 +409,90 @@ export function ProblemFeed() {
     }
   };
 
-  /* ── Complaint success handler ── */
-  const handleComplaintSuccess = (problem: {
-    id: string;
-    title: string;
-    description: string;
-    domain: string | null;
-    imageUrl: string | null;
-    createdAt: string;
-  }) => {
+  /* ── Optimistic complaint handlers ── */
+  const handleOptimisticAdd = (submission: OptimisticSubmission) => {
     const newItem: FeedItem = {
-      id: problem.id,
-      title: problem.title,
-      description: problem.description,
-      domain: problem.domain,
-      imageUrl: problem.imageUrl,
-      media: problem.imageUrl ? [problem.imageUrl] : [],
+      id: submission.backupId,
+      backupId: submission.backupId,
+      clientId: submission.clientId,
+      title: submission.title,
+      description: submission.description,
+      domain: submission.domain,
+      imageUrl: submission.imageUrl,
+      media: submission.media,
       upvoteCount: 0,
       activeProjectCount: 0,
-      createdAt: problem.createdAt,
+      createdAt: submission.createdAt,
       distanceKm: 0,
+      status: 'pending',
     };
 
-    setItems((previous) => [newItem, ...previous]);
+    setItems((previous) => [newItem, ...previous.filter((i) => i.clientId !== submission.clientId)]);
   };
 
-  const emptyState = !isInitialLoading && !isLoading && items.length === 0 && !locationError;
+  const handleConfirmedSuccess = (clientId: string, problem: ConfirmedProblem) => {
+    setItems((previous) =>
+      previous.map((item) =>
+        item.clientId === clientId || item.id === clientId || item.backupId === clientId
+          ? {
+              ...item,
+              id: problem.id,
+              clientId: problem.clientId,
+              backupId: undefined,
+              status: 'confirmed',
+              errorMessage: undefined,
+              isAuthError: undefined,
+              createdAt: problem.createdAt,
+            }
+          : item,
+      ),
+    );
+  };
+
+  const handleOptimisticFail = (failed: OptimisticSubmission) => {
+    setItems((previous) =>
+      previous.map((item) =>
+        item.clientId === failed.clientId
+          ? {
+              ...item,
+              status: 'failed',
+              errorMessage: failed.errorMessage,
+              isAuthError: failed.isAuthError,
+            }
+          : item,
+      ),
+    );
+  };
+
+  const handleManualRetry = (item: FeedItem) => {
+    if (!item.clientId) return;
+
+    const sub: OptimisticSubmission = {
+      backupId: item.backupId || item.id,
+      clientId: item.clientId,
+      title: item.title,
+      description: item.description,
+      domain: item.domain,
+      imageUrl: item.imageUrl,
+      media: item.media,
+      createdAt: item.createdAt,
+      status: 'pending',
+      retryCount: 0,
+    };
+
+    setItems((prev) =>
+      prev.map((i) =>
+        i.clientId === item.clientId ? { ...i, status: 'pending', errorMessage: undefined } : i,
+      ),
+    );
+
+    void submitWithRetry(sub, {
+      onSuccess: (confirmed) => handleConfirmedSuccess(item.clientId!, confirmed),
+      onFail: (failed) => handleOptimisticFail(failed),
+    });
+  };
+
+  const emptyState = !isInitialLoading && !isLoading && sessionResolved && items.length === 0 && !locationError;
   const endOfFeed = !isInitialLoading && !isLoading && nextCursor === null && items.length > 0;
 
   /* ── Derive user initials for avatar ── */
@@ -433,8 +573,14 @@ export function ProblemFeed() {
         <div className="space-y-4">
           {items.map((item, index) => (
             <article
-              key={item.id}
-              className="group overflow-hidden rounded-2xl border border-border bg-white shadow-sm transition-shadow hover:shadow-soft"
+              key={item.id || item.backupId || item.clientId}
+              className={`group overflow-hidden rounded-2xl border bg-white shadow-sm transition-all hover:shadow-soft ${
+                item.status === 'failed'
+                  ? 'border-rose-300 bg-rose-50/20'
+                  : item.status === 'pending'
+                    ? 'border-amber-200 bg-amber-50/10'
+                    : 'border-border'
+              }`}
               style={{ animationDelay: `${Math.min(index * 50, 300)}ms` }}
             >
               {/* Card header */}
@@ -443,7 +589,8 @@ export function ProblemFeed() {
                 <div className="flex flex-col items-center gap-0.5 pt-0.5">
                   <button
                     type="button"
-                    className="rounded p-1 text-muted transition hover:bg-brand-50 hover:text-brand-500"
+                    disabled={item.status === 'pending' || item.status === 'failed'}
+                    className="rounded p-1 text-muted transition hover:bg-brand-50 hover:text-brand-500 disabled:opacity-40"
                     aria-label="Upvote"
                   >
                     <UpvoteIcon />
@@ -454,6 +601,23 @@ export function ProblemFeed() {
                 {/* Content */}
                 <div className="min-w-0 flex-1">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
+                    {item.status === 'pending' ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800 animate-pulse">
+                        <Loader2 className="h-3 w-3 animate-spin text-amber-700" />
+                        Sending...
+                      </span>
+                    ) : item.status === 'failed' ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-100 px-2.5 py-0.5 text-[10px] font-semibold text-rose-800">
+                        <AlertCircle className="h-3 w-3 text-rose-600" />
+                        Failed to send
+                      </span>
+                    ) : item.status === 'pending_moderation' ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
+                        <Loader2 className="h-3 w-3 text-amber-600" />
+                        In Review (Visible only to you)
+                      </span>
+                    ) : null}
+
                     <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.1em] ${getDomainColor(item.domain)}`}>
                       {domainLabel(item.domain)}
                     </span>
@@ -472,6 +636,34 @@ export function ProblemFeed() {
                   </h2>
                 </div>
               </div>
+
+              {/* Failed Error Banner with Action */}
+              {item.status === 'failed' ? (
+                <div className="mx-5 mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+                  <span className="flex items-center gap-1.5">
+                    <AlertCircle className="h-4 w-4 shrink-0 text-rose-500" />
+                    {item.errorMessage || 'Failed to send problem.'}
+                  </span>
+                  {item.isAuthError ? (
+                    <button
+                      type="button"
+                      onClick={() => router.push('/login')}
+                      className="rounded-lg bg-rose-600 px-3 py-1 text-xs font-semibold text-white hover:bg-rose-700 transition"
+                    >
+                      Log in
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleManualRetry(item)}
+                      className="inline-flex items-center gap-1 rounded-lg bg-brand-600 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-700 transition"
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                      Retry
+                    </button>
+                  )}
+                </div>
+              ) : null}
 
               {/* Image */}
               {item.imageUrl ? (
@@ -580,7 +772,9 @@ export function ProblemFeed() {
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/10 p-4 backdrop-blur-sm">
           <ComplaintForm
             onClose={() => setIsComplaintOpen(false)}
-            onSuccess={handleComplaintSuccess}
+            onOptimisticSubmit={handleOptimisticAdd}
+            onSuccess={(confirmed) => handleConfirmedSuccess(confirmed.clientId, confirmed)}
+            onFail={handleOptimisticFail}
           />
         </div>
       ) : null}
