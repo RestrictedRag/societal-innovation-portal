@@ -205,6 +205,16 @@ export function GuidedProblemWizard({ onClose, onSuccess }: GuidedProblemWizardP
   };
 
   const handleFileUpload = (file: File) => {
+    const fileName = (file.name || '').toLowerCase();
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.avif'];
+    const isImage = file.type.startsWith('image/') || validExtensions.some((ext) => fileName.endsWith(ext));
+
+    if (!isImage) {
+      setCameraError('Only photo and image files (JPG, PNG, WebP, HEIC) are allowed in posts.');
+      return;
+    }
+
+    setCameraError(null);
     const previewUrl = URL.createObjectURL(file);
     setAttachedMedia((prev) => [
       ...prev,
@@ -602,7 +612,7 @@ export function GuidedProblemWizard({ onClose, onSuccess }: GuidedProblemWizardP
                 <input
                   type="file"
                   ref={galleryInputRef}
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp,image/jpg,image/heic,image/*"
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
@@ -611,6 +621,10 @@ export function GuidedProblemWizard({ onClose, onSuccess }: GuidedProblemWizardP
                 />
               </label>
             </div>
+
+            <p className="text-[11px] text-slate-500 italic">
+              Only photo files (JPG, PNG, WebP) up to 5MB are accepted.
+            </p>
 
             {/* Live Camera Viewport */}
             {isCameraOpen && (

@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
-import { db } from '@/db';
-import { users } from '@/db/schema';
 import { auth } from '@/lib/auth/server';
+import { resolveAuthUser } from '@/lib/auth/resolve-user';
 
 export async function GET() {
   try {
@@ -11,17 +9,12 @@ export async function GET() {
       return NextResponse.json(null, { status: 200 });
     }
 
-    const dbUser = await db.query.users.findFirst({
-      where: eq(users.authUserId, session.user.id),
-      with: {
-        university: true,
-      },
-    });
+    const authResult = await resolveAuthUser();
 
     return NextResponse.json(
       {
         ...session,
-        profile: dbUser ?? null,
+        profile: authResult.success ? authResult.user : null,
       },
       { status: 200 },
     );

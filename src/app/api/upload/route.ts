@@ -3,7 +3,15 @@ import { uploadImageToFirebase } from '@/lib/firebase-admin';
 import { resolveAuthUser } from '@/lib/auth/resolve-user';
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/jpg',
+  'image/heic',
+  'image/avif',
+];
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.avif'];
 
 export async function POST(request: Request) {
   try {
@@ -20,16 +28,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No file provided in form data (expected field "file")' }, { status: 400 });
     }
 
-    if (!ALLOWED_MIME_TYPES.includes(file.type) && !file.type.startsWith('image/')) {
+    const fileName = (file.name || '').toLowerCase();
+    const hasValidExtension = ALLOWED_EXTENSIONS.some((ext) => fileName.endsWith(ext));
+    const isImageMime = file.type.startsWith('image/') && (ALLOWED_MIME_TYPES.includes(file.type) || hasValidExtension);
+
+    if (!isImageMime && !hasValidExtension) {
       return NextResponse.json(
-        { error: `Unsupported file type: ${file.type}. Allowed formats: JPG, PNG, WebP.` },
+        {
+          error: `Only photo/image files (JPG, PNG, WebP, HEIC) are allowed in posts. Received: ${file.type || 'unknown format'}.`,
+        },
         { status: 400 },
       );
     }
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
       return NextResponse.json(
-        { error: 'File size exceeds maximum allowed limit of 5MB.' },
+        { error: 'Photo size exceeds maximum allowed limit of 5MB.' },
         { status: 400 },
       );
     }

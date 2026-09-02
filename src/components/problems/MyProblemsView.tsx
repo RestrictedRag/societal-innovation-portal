@@ -21,6 +21,8 @@ import {
 import { GuidedProblemWizard } from '@/components/complaints/GuidedProblemWizard';
 import { CitizenGuidanceSection } from '@/components/complaints/CitizenGuidanceSection';
 import { GovernmentLinksSection } from '@/components/complaints/GovernmentLinksSection';
+import { PostDetailModal } from '@/components/feed/PostDetailModal';
+import { BookOpen } from 'lucide-react';
 import { useAuth } from '@/lib/auth/use-auth';
 
 interface UniversityClaim {
@@ -84,6 +86,7 @@ export default function MyProblemsView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [selectedProblemForReading, setSelectedProblemForReading] = useState<MyProblem | null>(null);
 
   const fetchMyProblems = async (status: string) => {
     setLoading(true);
@@ -355,7 +358,8 @@ export default function MyProblemsView() {
             return (
               <div
                 key={problem.id}
-                className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:border-nexus-primary/30 hover:shadow-md transition space-y-4"
+                onClick={() => setSelectedProblemForReading(problem)}
+                className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:border-nexus-primary/40 hover:shadow-md transition space-y-4 cursor-pointer group"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                   <div className="space-y-1.5 flex-grow">
@@ -378,10 +382,16 @@ export default function MyProblemsView() {
                       )}
                     </div>
 
-                    <h3 className="font-bold text-base text-slate-900">{problem.title}</h3>
-                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-4xl">
+                    <h3 className="font-bold text-base text-slate-900 group-hover:text-nexus-primary transition-colors">
+                      {problem.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-4xl line-clamp-2">
                       {problem.description}
                     </p>
+
+                    <div className="text-xs font-bold text-nexus-primary group-hover:underline flex items-center gap-1 pt-1">
+                      <BookOpen className="w-3.5 h-3.5" /> Read full post & detailed evidence →
+                    </div>
                   </div>
 
                   {problem.image_url && (
@@ -389,7 +399,7 @@ export default function MyProblemsView() {
                       <img
                         src={problem.image_url}
                         alt={problem.title}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-200"
                       />
                     </div>
                   )}
@@ -451,6 +461,27 @@ export default function MyProblemsView() {
             );
           })}
         </div>
+      )}
+
+      {/* Full Post Detail Modal */}
+      {selectedProblemForReading && (
+        <PostDetailModal
+          post={{
+            id: selectedProblemForReading.id,
+            clientId: selectedProblemForReading.client_id,
+            title: selectedProblemForReading.title,
+            description: selectedProblemForReading.description,
+            domain: selectedProblemForReading.domain,
+            imageUrl: selectedProblemForReading.image_url,
+            upvoteCount: 0,
+            activeProjectCount: selectedProblemForReading.active_claims_count,
+            createdAt: selectedProblemForReading.created_at,
+            status: selectedProblemForReading.status,
+            latitude: selectedProblemForReading.latitude,
+            longitude: selectedProblemForReading.longitude,
+          }}
+          onClose={() => setSelectedProblemForReading(null)}
+        />
       )}
 
       {/* Report Challenge Modal */}

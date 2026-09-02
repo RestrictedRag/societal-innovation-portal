@@ -11,6 +11,7 @@ import {
   users,
 } from '@/db/schema';
 import { auth } from '@/lib/auth/server';
+import { resolveAuthUser } from '@/lib/auth/resolve-user';
 import { CHAT_SYSTEM_PROMPT } from '@/lib/ai/chat-system-prompt';
 import { getChatModel } from '@/lib/ai/models';
 import { searchHelpKnowledge } from '@/lib/ai/help-knowledge';
@@ -59,14 +60,9 @@ export async function POST(request: Request) {
     // 1. Resolve user session (optional for general help, required for personalized tools)
     let userId: string | null = null;
     try {
-      const { data: session } = await auth.getSession();
-      if (session?.user?.id) {
-        const user = await db.query.users.findFirst({
-          where: eq(users.authUserId, session.user.id),
-        });
-        if (user) {
-          userId = user.id;
-        }
+      const authResult = await resolveAuthUser();
+      if (authResult.success) {
+        userId = authResult.user.id;
       }
     } catch {
       // Allow guest exploration

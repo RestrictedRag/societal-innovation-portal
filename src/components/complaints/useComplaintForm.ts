@@ -218,8 +218,12 @@ export function useComplaintForm({ onClose, onOptimisticSubmit, onSuccess, onFai
       return;
     }
 
-    if (!file.type.startsWith('image/')) {
-      setError('Please choose an image file for the complaint media.');
+    const fileName = (file.name || '').toLowerCase();
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.avif'];
+    const isImage = file.type.startsWith('image/') || validExtensions.some((ext) => fileName.endsWith(ext));
+
+    if (!isImage) {
+      setError('Only photo and image files (JPG, PNG, WebP, HEIC) are allowed in posts.');
       return;
     }
 

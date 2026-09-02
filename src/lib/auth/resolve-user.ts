@@ -10,6 +10,7 @@ export type ResolvedAuthResult =
 /**
  * Standardized helper to resolve the active Neon Auth session and query the database user profile.
  * Centralizes session extraction, error mapping, and user retrieval across all server routes.
+ * Includes email fallback, auth ID synchronization, and automatic demo account provisioning.
  */
 export async function resolveAuthUser(): Promise<ResolvedAuthResult> {
   try {
@@ -23,9 +24,90 @@ export async function resolveAuthUser(): Promise<ResolvedAuthResult> {
       };
     }
 
-    const user = await db.query.users.findFirst({
-      where: eq(users.authUserId, session.user.id),
+    const sessionUserId = session.user.id;
+    const sessionEmail = session.user.email?.toLowerCase().trim();
+
+    // 1. Primary lookup by authUserId
+    let user = await db.query.users.findFirst({
+      where: eq(users.authUserId, sessionUserId),
+      with: {
+        university: true,
+      },
     });
+
+    // 2. Fallback lookup by email if authUserId doesn't match yet
+    if (!user && sessionEmail) {
+      const userByEmail = await db.query.users.findFirst({
+        where: eq(users.email, sessionEmail),
+        with: {
+          university: true,
+        },
+      });
+
+      if (userByEmail) {
+        // Sync authUserId in database so future lookups are instantaneous
+        try {
+          await db
+            .update(users)
+            .set({ authUserId: sessionUserId })
+            .where(eq(users.id, userByEmail.id));
+          user = { ...userByEmail, authUserId: sessionUserId };
+        } catch {
+          user = userByEmail;
+        }
+      }
+    }
+
+    // 3. Auto-provision demo account or default citizen profile if record is missing
+    if (!user && sessionEmail) {
+      const isDemoCitizen = sessionEmail.includes('demo.citizen');
+      const isDemoStudent = sessionEmail.includes('demo.student');
+      const isDemoFaculty = sessionEmail.includes('demo.faculty');
+      const isDemoIndustry = sessionEmail.includes('demo.industry');
+      const isDemoAdmin = sessionEmail.includes('demo.admin');
+
+      let role: User['role'] = 'CITIZEN';
+      let fullName = session.user.name || 'Citizen User';
+
+      if (isDemoStudent) {
+        role = 'STUDENT';
+        fullName = 'Demo Student (Aarav Sharma)';
+      } else if (isDemoFaculty) {
+        role = 'FACULTY';
+        fullName = 'Demo Faculty (Dr. Rajesh Kumar)';
+      } else if (isDemoIndustry) {
+        role = 'COMPANY_REP';
+        fullName = 'Demo Industry Partner (NexGen Labs)';
+      } else if (isDemoAdmin) {
+        role = 'ADMIN';
+        fullName = 'Demo Administrator';
+      } else if (isDemoCitizen) {
+        role = 'CITIZEN';
+        fullName = 'Demo Citizen (Aarti Verma)';
+      }
+
+      try {
+        const [created] = await db
+          .insert(users)
+          .values({
+            authUserId: sessionUserId,
+            email: sessionEmail,
+            fullName,
+            firstName: fullName.split(' ')[0] || 'User',
+            lastName: fullName.split(' ').slice(1).join(' ') || '',
+            role,
+            city: 'New Delhi',
+            state: 'Delhi',
+            isVerified: true,
+          })
+          .returning();
+        if (created) {
+          user = { ...created, university: null };
+        }
+      } catch (insertErr) {
+        console.warn('Auto-provision user profile failed:', insertErr);
+      }
+    }
 
     if (!user) {
       return {
@@ -38,7 +120,7 @@ export async function resolveAuthUser(): Promise<ResolvedAuthResult> {
     return {
       success: true,
       user,
-      sessionUserId: session.user.id,
+      sessionUserId,
     };
   } catch (err: any) {
     console.error('Failed to resolve auth user:', err);

@@ -309,11 +309,11 @@ export function ComplaintFormView({
                 </button>
 
                 <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-nexus-primary text-nexus-primary text-xs font-semibold hover:bg-nexus-primary/5 transition cursor-pointer">
-                  <Upload className="w-4 h-4" /> Upload Image
+                  <Upload className="w-4 h-4" /> Upload Photo
                   <input
                     type="file"
                     ref={galleryInputRef}
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/jpg,image/heic,image/*"
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
@@ -322,6 +322,10 @@ export function ComplaintFormView({
                   />
                 </label>
               </div>
+
+              <p className="text-[11px] text-slate-500 italic">
+                Only photo files (JPG, PNG, WebP) up to 5MB are accepted.
+              </p>
 
               {/* Camera Stream Viewport */}
               {isCameraOpen && (

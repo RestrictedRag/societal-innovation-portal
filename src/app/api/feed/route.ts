@@ -151,11 +151,14 @@ export async function GET(request: Request) {
         cp.longitude,
         COALESCE(cp.title, LEFT(cp.description, 120)) AS title,
         LEFT(cp.description, 200) AS description,
+        cp.description AS full_description,
         cp.domain,
+        cp.category,
+        cp.subcategory,
         cp.image_url,
         cp.created_at,
         ${activeProjectCountSubquery} AS active_project_count,
-        0::int AS upvote_count,
+        COALESCE((SELECT COUNT(*)::int FROM problem_upvotes pu WHERE pu.problem_id = cp.id), 0) AS upvote_count,
         ${geo.distanceExpression}
       FROM citizen_problems cp
       LEFT JOIN users u ON u.id = cp.user_id
@@ -179,7 +182,10 @@ export async function GET(request: Request) {
       status: string;
       title: string;
       description: string;
+      full_description: string;
       domain: string | null;
+      category: string | null;
+      subcategory: string | null;
       image_url: string | null;
       created_at: string;
       active_project_count: number;
@@ -194,7 +200,10 @@ export async function GET(request: Request) {
       clientId: row.client_id ?? undefined,
       title: String(row.title ?? 'Community issue'),
       description: truncateDescription(row.description),
+      fullDescription: row.full_description || row.description,
       domain: row.domain ?? null,
+      category: row.category ?? null,
+      subcategory: row.subcategory ?? null,
       imageUrl: row.image_url ?? null,
       media: row.image_url ? [row.image_url] : [],
       upvoteCount: Number(row.upvote_count ?? 0),
