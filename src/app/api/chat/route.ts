@@ -282,37 +282,41 @@ export async function POST(request: Request) {
     const hasApiKey = Boolean(process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.OPENAI_API_KEY);
 
     if (hasApiKey && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-      const result = streamText({
-        model: getChatModel(),
-        system: CHAT_SYSTEM_PROMPT,
-        messages: coreMessages,
-        tools,
-        stopWhen: stepCountIs(5),
-        onFinish: async (event) => {
-          if (userId && currentSessionId && event.text) {
-            await db.insert(chatMessages).values({
-              sessionId: currentSessionId,
-              role: 'assistant',
-              content: event.text,
-            }).catch((e: unknown) => logger.warn('Failed to record assistant message', { error: String(e) }));
-          }
-        },
-      });
+      try {
+        const result = streamText({
+          model: getChatModel(),
+          system: CHAT_SYSTEM_PROMPT,
+          messages: coreMessages,
+          tools,
+          stopWhen: stepCountIs(5),
+          onFinish: async (event) => {
+            if (userId && currentSessionId && event.text) {
+              await db.insert(chatMessages).values({
+                sessionId: currentSessionId,
+                role: 'assistant',
+                content: event.text,
+              }).catch((e: unknown) => logger.warn('Failed to record assistant message', { error: String(e) }));
+            }
+          },
+        });
 
-      return result.toUIMessageStreamResponse({
-        headers: {
-          ...(currentSessionId ? { 'x-chat-session-id': currentSessionId } : {}),
-        },
-      });
+        return result.toUIMessageStreamResponse({
+          headers: {
+            ...(currentSessionId ? { 'x-chat-session-id': currentSessionId } : {}),
+          },
+        });
+      } catch (streamErr) {
+        logger.warn('Gemini streamText failed, falling back to knowledge base', { error: String(streamErr) });
+      }
     }
 
-    // Fallback response if API key is not present
+    // Fallback response if API key is not present or stream failed
     const lastUserQuery = getMessageText(latestUserMsg ?? {}).toLowerCase();
-    let fallbackReply = "I am the Civic Innovation Marketplace assistant. How can I help you understand problem reporting, university projects, or corporate escrow funding?";
+    let fallbackReply = "I am the CivicNexus platform assistant. How can I help you understand problem reporting, university capstone claiming, or corporate escrow funding?";
 
     const helpRes = await tools.searchAppHelp.execute({ query: lastUserQuery }, {} as never);
     if (helpRes && typeof helpRes === 'object' && 'results' in helpRes && Array.isArray(helpRes.results) && helpRes.results.length > 0) {
-      fallbackReply = helpRes.results[0].content;
+      fallbackReply = `${helpRes.results[0].title}:\n\n${helpRes.results[0].content}`;
     }
 
     const encoder = new TextEncoder();
