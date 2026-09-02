@@ -7,6 +7,7 @@ import { db } from './index';
 import {
   universities,
   users,
+  companyProfiles,
   citizenProblems,
   problemEmbeddings,
   problemUpvotes,
@@ -15,6 +16,10 @@ import {
   escrowLedger,
   industryNeeds,
   resourceOffers,
+  industryCollaborations,
+  projectPilots,
+  savedProjects,
+  notifications,
 } from './schema';
 
 const DEMO_PASSWORD = 'DemoPassword@2026';
@@ -747,8 +752,11 @@ export async function seedDemoData() {
     }
   }
 
-  // Resource Offers on Project 1
+  // 5.5 Resource Offers on Project 1
   const waterLeakProjectId = projectMap['proj_water_leak_ultrasonic'];
+  const wasteProjectId = projectMap['proj_waste_segregation_vision'];
+  const drainageProjectId = projectMap['proj_drainage_culvert_at_risk'];
+
   if (waterLeakProjectId) {
     const existingOffers = await db.query.resourceOffers.findMany({
       where: eq(resourceOffers.projectId, waterLeakProjectId),
@@ -778,6 +786,221 @@ export async function seedDemoData() {
           status: 'OFFERED',
         },
       ]);
+    }
+  }
+
+  // 6. Ensure Company Profile for Industry Persona
+  console.log('🏢 Ensuring Company Profile for Industry Partner...');
+  const existingCompanyProfile = await db.query.companyProfiles.findFirst({
+    where: eq(companyProfiles.userId, industryUserId),
+  });
+
+  if (!existingCompanyProfile) {
+    await db.insert(companyProfiles).values({
+      userId: industryUserId,
+      companyName: 'NexGen Urban Technologies (Open Innovation Labs)',
+      companyType: 'Enterprise',
+      industry: 'Smart Infrastructure & Environmental Automation',
+      sector: 'IoT, AI & Public Infrastructure',
+      website: 'https://nexgenlabs.demo',
+      description: 'Global urban infrastructure enterprise partnering with tier-1 engineering institutions to fund, mentor, and deploy sensor-based municipal solutions.',
+      location: 'Gurugram, Haryana & New Delhi',
+      areasOfExpertise: ['IoT & Embedded Telemetry', 'Edge AI & Computer Vision', 'Acoustic Pipeline Triangulation', 'Renewable Microgrids'],
+      technologies: ['Python', 'Embedded C', 'STM32', 'LoRaWAN', 'TensorFlow Lite', 'Cloud Analytics'],
+      csrInterests: ['Drinking Water Conservation', 'Municipal Waste Diversion', 'Clean Energy Microgrids', 'Engineering Student Capstone Grants'],
+      innovationInterests: ['Non-invasive Acoustic Water Leak Detection', 'Automated Canal Sluices', 'High-speed Optical Waste Sorters'],
+      preferredDomains: ['water_management', 'waste_management', 'clean_energy', 'urban_infrastructure'],
+      availableResources: ['Milestone Escrow Grants', 'Hardware Sensor Evaluation Kits', 'Weekly Senior Mentorship', 'Live Municipal Transit Testbeds'],
+      fundingCapacity: '₹50,00,000 / annum',
+      pilotLocations: ['Outer Ring Road Corridor (New Delhi)', 'Sector 14 Market (Gurugram)', 'Okhla Industrial Cluster'],
+      contactPersonName: 'Vikram Malhotra',
+      contactEmail: 'demo.industry@civicnexus.demo',
+      contactPhone: '+91 98100 12345',
+    });
+  }
+
+  // 7. Ensure Industry Collaborations
+  console.log('🤝 Ensuring Industry Collaborations...');
+  if (waterLeakProjectId) {
+    const existingCollab = await db.query.industryCollaborations.findFirst({
+      where: eq(industryCollaborations.projectId, waterLeakProjectId),
+    });
+
+    if (!existingCollab) {
+      await db.insert(industryCollaborations).values({
+        projectId: waterLeakProjectId,
+        companyUserId: industryUserId,
+        proposalType: 'MENTORSHIP',
+        title: 'Sensor Calibration & Acoustic Rig Mentorship Partnership',
+        description: 'NexGen senior hardware instrumentation team conducting weekly design reviews and supplying industrial piezo transducers for field validation.',
+        commitment: 'Weekly 1-on-1 Faculty-Student Technical Standups + 10x STM32 Transducer Kits',
+        estimatedValue: '35000',
+        duration: '6 Months',
+        contactPerson: 'Vikram Malhotra',
+        contactEmail: 'demo.industry@civicnexus.demo',
+        status: 'ACCEPTED',
+        facultyFeedback: 'Accepted by Dr. Rajesh Kulkarni (IIT Delhi). Transducers received and calibrated in fluid dynamics testbench.',
+      });
+    }
+  }
+
+  if (wasteProjectId) {
+    const existingCollab2 = await db.query.industryCollaborations.findFirst({
+      where: eq(industryCollaborations.projectId, wasteProjectId),
+    });
+
+    if (!existingCollab2) {
+      await db.insert(industryCollaborations).values({
+        projectId: wasteProjectId,
+        companyUserId: industryUserId,
+        proposalType: 'DATASET',
+        title: 'NIR Plastic Spectroscopy Dataset & Cloud Compute Grant',
+        description: 'Allocated 50,000 annotated near-infrared spectroscopy training images and $5,000 GPU training credits.',
+        commitment: 'Industrial NIR Dataset + High-Performance GPU Training Cluster',
+        estimatedValue: '18000',
+        duration: '3 Months',
+        contactPerson: 'Vikram Malhotra',
+        contactEmail: 'demo.industry@civicnexus.demo',
+        status: 'PROPOSED',
+      });
+    }
+  }
+
+  // 8. Ensure Project Pilots
+  console.log('🚀 Ensuring Municipal Project Pilots...');
+  if (waterLeakProjectId) {
+    const existingPilot1 = await db.query.projectPilots.findFirst({
+      where: eq(projectPilots.projectId, waterLeakProjectId),
+    });
+
+    if (!existingPilot1) {
+      await db.insert(projectPilots).values({
+        projectId: waterLeakProjectId,
+        companyUserId: industryUserId,
+        title: 'Outer Ring Road Smart Acoustic Pipeline Leakage Monitoring Pilot',
+        location: 'Outer Ring Road Corridor, South Delhi',
+        startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        endDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
+        objective: 'Deploy 10 acoustic nodes across 2.5km municipal transit corridor to localize subsurface drinking water leaks within 3 meters precision under high traffic vibration.',
+        targetPopulation: '12,000 Daily Commuters & Local Commercial Establishments',
+        infrastructureDetails: '10x Solar-Powered Acoustic Triangulation Sensors with Cellular Gateway',
+        expectedMetrics: 'Daily Clean Water Loss Reduction (>90%), Leak Localization Time (<15 minutes)',
+        responsibleContact: 'Vikram Malhotra',
+        status: 'ACTIVE',
+        progressPercent: 65,
+        impactSummary: 'Successfully detected 3 subterranean fissure leaks in week 2, mitigating 42,000 Liters/day clean drinking water loss and preventing roadway erosion.',
+        metricsJson: JSON.stringify({
+          waterSavedDaily: '42,000 L / day',
+          acousticAccuracy: '96.4%',
+          residentsBenefited: '12,000+',
+          sensorUptime: '99.4%',
+          meanTimeToDetect: '11 mins',
+        }),
+      });
+    }
+  }
+
+  if (drainageProjectId) {
+    const existingPilot2 = await db.query.projectPilots.findFirst({
+      where: eq(projectPilots.projectId, drainageProjectId),
+    });
+
+    if (!existingPilot2) {
+      await db.insert(projectPilots).values({
+        projectId: drainageProjectId,
+        companyUserId: industryUserId,
+        title: 'Monsoon Culvert Ultrasonic Silt Depth & Flash Flood Pilot',
+        location: 'Dharavi Stormwater Culvert Network, Mumbai',
+        startDate: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+        endDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+        objective: 'Continuous ultrasonic silt depth telemetry with automated SMS municipal sluice triggers during heavy monsoon downpours.',
+        targetPopulation: '35,000 Low-lying Residents',
+        infrastructureDetails: '5x Submersible Ultrasonic Transducers with LoRa Mesh',
+        expectedMetrics: 'Zero flash flooding inundation, 100% telemetry uptime during 150mm/day precipitation',
+        responsibleContact: 'Vikram Malhotra',
+        status: 'COMPLETED',
+        progressPercent: 100,
+        impactSummary: 'Protected 35,000 residents from monsoon stormwater backflow. Automated early desilting dispatches before peak monsoon surge.',
+        metricsJson: JSON.stringify({
+          floodIncidentsPrevented: '4 Major Events',
+          residentsProtected: '35,000',
+          averageEarlyWarning: '45 mins',
+          telemetryUptime: '99.8%',
+        }),
+      });
+    }
+  }
+
+  // 9. Ensure Saved Projects (Watchlist)
+  console.log('📌 Ensuring Saved Projects Watchlist...');
+  if (waterLeakProjectId) {
+    const existingSaved1 = await db.query.savedProjects.findFirst({
+      where: sql`${savedProjects.userId} = ${industryUserId} AND ${savedProjects.projectId} = ${waterLeakProjectId}`,
+    });
+    if (!existingSaved1) {
+      await db.insert(savedProjects).values({
+        userId: industryUserId,
+        projectId: waterLeakProjectId,
+        notes: 'High-priority synergy with municipal smart water utilities initiative. Active live pilot ongoing.',
+      });
+    }
+  }
+
+  if (wasteProjectId) {
+    const existingSaved2 = await db.query.savedProjects.findFirst({
+      where: sql`${savedProjects.userId} = ${industryUserId} AND ${savedProjects.projectId} = ${wasteProjectId}`,
+    });
+    if (!existingSaved2) {
+      await db.insert(savedProjects).values({
+        userId: industryUserId,
+        projectId: wasteProjectId,
+        notes: 'Promising computer vision model for automated optical sorting line.',
+      });
+    }
+  }
+
+  // 10. Ensure Industry Notifications
+  console.log('🔔 Ensuring Industry Notifications...');
+  const notifDefs = [
+    {
+      title: 'Pilot Milestone Progress: 65% Completed',
+      message: 'Outer Ring Road acoustic sensor mesh detected 3 micro-fissures in South Delhi municipal main line.',
+      type: 'PILOT',
+      link: '/corporate',
+    },
+    {
+      title: 'Collaboration Proposal Accepted',
+      message: 'Dr. Rajesh Kulkarni (IIT Delhi) accepted your Hardware & Mentorship partnership for Water Leakage Detection.',
+      type: 'COLLABORATION',
+      link: '/corporate',
+    },
+    {
+      title: 'New High-Synergy Recommendation (94% Match)',
+      message: 'A new TRL 5 project "Autonomous Thermal Drone Mapping for Solar Degradation" matches your Clean Energy CSR focus.',
+      type: 'RECOMMENDATION',
+      link: '/corporate',
+    },
+    {
+      title: 'Escrow Milestone Verification',
+      message: 'TRL 4 milestone verified by faculty for Ring Road Acoustic Detection. $10,000 released from escrow ledger to student lab.',
+      type: 'SYSTEM',
+      link: '/corporate',
+    },
+  ];
+
+  for (const n of notifDefs) {
+    const existingNotif = await db.query.notifications.findFirst({
+      where: sql`${notifications.userId} = ${industryUserId} AND ${notifications.title} = ${n.title}`,
+    });
+    if (!existingNotif) {
+      await db.insert(notifications).values({
+        userId: industryUserId,
+        title: n.title,
+        message: n.message,
+        type: n.type,
+        link: n.link,
+        isRead: false,
+      });
     }
   }
 

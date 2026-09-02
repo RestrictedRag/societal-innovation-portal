@@ -12,7 +12,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "seed:demo": "tsx --env-file=.env.local --env-file=.env src/db/seed-demo.ts"
+    "seed:demo": "tsx --env-file=.env.local --env-file=.env src/db/seed-demo.ts",
+    "setup:local": "node setup-local.js",
+    "share:env": "node -e \"const fs=require('fs'); console.log(fs.readFileSync('.env.local', 'utf8'))\""
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.57",

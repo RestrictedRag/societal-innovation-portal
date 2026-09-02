@@ -305,6 +305,37 @@ export const escrowLedger = pgTable('escrow_ledger', {
   releasedAt: timestamp('released_at', { withTimezone: true }),
 });
 
+export const companyProfiles = pgTable('company_profiles', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  companyName: text('company_name').notNull(),
+  companyType: text('company_type'), // e.g., Enterprise, Startup, SME, PSU, NGO
+  industry: text('industry'),
+  sector: text('sector'),
+  website: text('website'),
+  description: text('description'),
+  location: text('location'),
+  areasOfExpertise: text('areas_of_expertise').array(),
+  technologies: text('technologies').array(),
+  csrInterests: text('csr_interests').array(),
+  innovationInterests: text('innovation_interests').array(),
+  preferredDomains: text('preferred_domains').array(),
+  availableResources: text('available_resources').array(),
+  fundingCapacity: text('funding_capacity'),
+  pilotLocations: text('pilot_locations').array(),
+  contactPersonName: text('contact_person_name'),
+  contactEmail: text('contact_email'),
+  contactPhone: text('contact_phone'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
 export const industryNeeds = pgTable('industry_needs', {
   id: uuid('id').primaryKey().defaultRandom(),
   companyUserId: uuid('company_user_id')
@@ -315,6 +346,15 @@ export const industryNeeds = pgTable('industry_needs', {
   domain: problemDomainEnum('domain'),
   targetTrl: integer('target_trl').notNull().default(4),
   resourceOfferings: text('resource_offerings').array(),
+  technology: text('technology').array(),
+  problemCategory: text('problem_category'),
+  requiredSkills: text('required_skills').array(),
+  preferredProjectType: text('preferred_project_type').default('BOTH'),
+  expectedOutcome: text('expected_outcome'),
+  fundingAvailable: text('funding_available'),
+  pilotOpportunity: text('pilot_opportunity'),
+  timeline: text('timeline'),
+  location: text('location'),
   status: text('status').notNull().default('OPEN'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
@@ -334,6 +374,113 @@ export const resourceOffers = pgTable('resource_offers', {
   offeringType: text('offering_type').notNull(),
   details: text('details').notNull(),
   status: text('status').notNull().default('OFFERED'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const industryCollaborations = pgTable('industry_collaborations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  projectId: uuid('project_id')
+    .notNull()
+    .references(() => universityProjects.id, { onDelete: 'cascade' }),
+  companyUserId: uuid('company_user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  proposalType: text('proposal_type').notNull(), // MENTORSHIP, FUNDING, HARDWARE, SOFTWARE, DATASET, API, CLOUD_CREDITS, TECHNICAL_EXPERTISE, TESTING_FACILITY, PILOT_LOCATION, OTHER
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  commitment: text('commitment'),
+  estimatedValue: numeric('estimated_value', { precision: 16, scale: 2 }).default('0'),
+  duration: text('duration'),
+  contactPerson: text('contact_person'),
+  contactEmail: text('contact_email'),
+  status: text('status').notNull().default('PROPOSED'), // PROPOSED, ACCEPTED, REJECTED, IN_PROGRESS, COMPLETED
+  facultyFeedback: text('faculty_feedback'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const projectPilots = pgTable('project_pilots', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  projectId: uuid('project_id')
+    .notNull()
+    .references(() => universityProjects.id, { onDelete: 'cascade' }),
+  companyUserId: uuid('company_user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  collaborationId: uuid('collaboration_id').references(() => industryCollaborations.id, { onDelete: 'set null' }),
+  title: text('title').notNull(),
+  location: text('location').notNull(),
+  startDate: timestamp('start_date', { withTimezone: true }),
+  endDate: timestamp('end_date', { withTimezone: true }),
+  objective: text('objective').notNull(),
+  targetPopulation: text('target_population'),
+  infrastructureDetails: text('infrastructure_details'),
+  expectedMetrics: text('expected_metrics'),
+  responsibleContact: text('responsible_contact'),
+  status: text('status').notNull().default('PROPOSED'), // PROPOSED, APPROVED, PLANNED, ACTIVE, COMPLETED, CANCELLED
+  progressPercent: integer('progress_percent').notNull().default(0),
+  impactSummary: text('impact_summary'),
+  metricsJson: text('metrics_json'), // JSON string of metric name-value pairs
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const savedProjects = pgTable(
+  'saved_projects',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => universityProjects.id, { onDelete: 'cascade' }),
+    notes: text('notes'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    userProjectUnique: uniqueIndex('saved_projects_user_project_unique').on(
+      table.userId,
+      table.projectId,
+    ),
+  }),
+);
+
+export const interestRequests = pgTable('interest_requests', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  projectId: uuid('project_id')
+    .notNull()
+    .references(() => universityProjects.id, { onDelete: 'cascade' }),
+  targetType: text('target_type').notNull().default('PROJECT'), // PROJECT, FACULTY, STUDENT
+  targetUserId: uuid('target_user_id').references(() => users.id, { onDelete: 'set null' }),
+  interestType: text('interest_type').notNull().default('EXPLORATORY_MEETING'), // EXPLORATORY_MEETING, MENTORSHIP, PILOT_DISCUSSION, CSR_FUNDING, TALENT_ACQUISITION
+  message: text('message').notNull(),
+  supportDetails: text('support_details'),
+  preferredTime: text('preferred_time'),
+  contactEmail: text('contact_email'),
+  status: text('status').notNull().default('PENDING'), // PENDING, ACCEPTED, DECLINED, SCHEDULED
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const notifications = pgTable('notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  type: text('type').notNull().default('SYSTEM'), // RECOMMENDATION, COLLABORATION, PILOT, SYSTEM, INTEREST
+  link: text('link'),
+  isRead: boolean('is_read').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -368,6 +515,11 @@ export const usersRelations = relations(users, ({ many, one }) => ({
     references: [universities.id],
     relationName: 'universityMembers',
   }),
+  companyProfile: one(companyProfiles, {
+    fields: [users.id],
+    references: [companyProfiles.userId],
+    relationName: 'userCompanyProfile',
+  }),
   citizenProblems: many(citizenProblems, { relationName: 'userCitizenProblems' }),
   claimedProblems: many(citizenProblems, { relationName: 'claimedProblems' }),
   upvotes: many(problemUpvotes, { relationName: 'userProblemUpvotes' }),
@@ -377,6 +529,19 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   escrowLedgers: many(escrowLedger, { relationName: 'corporateEscrowLedgers' }),
   industryNeeds: many(industryNeeds, { relationName: 'companyIndustryNeeds' }),
   resourceOffers: many(resourceOffers, { relationName: 'corporateResourceOffers' }),
+  collaborations: many(industryCollaborations, { relationName: 'companyCollaborations' }),
+  pilots: many(projectPilots, { relationName: 'companyPilots' }),
+  savedProjects: many(savedProjects, { relationName: 'userSavedProjects' }),
+  interestRequests: many(interestRequests, { relationName: 'userInterestRequests' }),
+  notifications: many(notifications, { relationName: 'userNotifications' }),
+}));
+
+export const companyProfilesRelations = relations(companyProfiles, ({ one }) => ({
+  user: one(users, {
+    fields: [companyProfiles.userId],
+    references: [users.id],
+    relationName: 'userCompanyProfile',
+  }),
 }));
 
 export const chatSessionsRelations = relations(chatSessions, ({ one, many }) => ({
@@ -466,6 +631,10 @@ export const universityProjectsRelations = relations(universityProjects, ({ one,
   updates: many(projectUpdates),
   ledgers: many(escrowLedger),
   resourceOffers: many(resourceOffers),
+  collaborations: many(industryCollaborations),
+  pilots: many(projectPilots),
+  savedByUsers: many(savedProjects),
+  interestRequests: many(interestRequests),
 }));
 
 export const projectUpdatesRelations = relations(projectUpdates, ({ one }) => ({
@@ -516,6 +685,71 @@ export const resourceOffersRelations = relations(resourceOffers, ({ one }) => ({
   }),
 }));
 
+export const industryCollaborationsRelations = relations(industryCollaborations, ({ one, many }) => ({
+  project: one(universityProjects, {
+    fields: [industryCollaborations.projectId],
+    references: [universityProjects.id],
+  }),
+  companyUser: one(users, {
+    fields: [industryCollaborations.companyUserId],
+    references: [users.id],
+    relationName: 'companyCollaborations',
+  }),
+  pilots: many(projectPilots),
+}));
+
+export const projectPilotsRelations = relations(projectPilots, ({ one }) => ({
+  project: one(universityProjects, {
+    fields: [projectPilots.projectId],
+    references: [universityProjects.id],
+  }),
+  companyUser: one(users, {
+    fields: [projectPilots.companyUserId],
+    references: [users.id],
+    relationName: 'companyPilots',
+  }),
+  collaboration: one(industryCollaborations, {
+    fields: [projectPilots.collaborationId],
+    references: [industryCollaborations.id],
+  }),
+}));
+
+export const savedProjectsRelations = relations(savedProjects, ({ one }) => ({
+  user: one(users, {
+    fields: [savedProjects.userId],
+    references: [users.id],
+    relationName: 'userSavedProjects',
+  }),
+  project: one(universityProjects, {
+    fields: [savedProjects.projectId],
+    references: [universityProjects.id],
+  }),
+}));
+
+export const interestRequestsRelations = relations(interestRequests, ({ one }) => ({
+  user: one(users, {
+    fields: [interestRequests.userId],
+    references: [users.id],
+    relationName: 'userInterestRequests',
+  }),
+  project: one(universityProjects, {
+    fields: [interestRequests.projectId],
+    references: [universityProjects.id],
+  }),
+  targetUser: one(users, {
+    fields: [interestRequests.targetUserId],
+    references: [users.id],
+  }),
+}));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+    relationName: 'userNotifications',
+  }),
+}));
+
 export type UserRole = (typeof userRoleEnum.enumValues)[number];
 export type ProblemStatus = (typeof problemStatusEnum.enumValues)[number];
 export type MediaStatus = (typeof mediaStatusEnum.enumValues)[number];
@@ -526,6 +760,8 @@ export type EscrowLedgerStatus = (typeof escrowLedgerStatusEnum.enumValues)[numb
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+export type CompanyProfile = typeof companyProfiles.$inferSelect;
+export type NewCompanyProfile = typeof companyProfiles.$inferInsert;
 export type CitizenProblem = typeof citizenProblems.$inferSelect;
 export type NewCitizenProblem = typeof citizenProblems.$inferInsert;
 export type ProblemMedia = typeof problemMedia.$inferSelect;
@@ -548,5 +784,16 @@ export type IndustryNeed = typeof industryNeeds.$inferSelect;
 export type NewIndustryNeed = typeof industryNeeds.$inferInsert;
 export type ResourceOffer = typeof resourceOffers.$inferSelect;
 export type NewResourceOffer = typeof resourceOffers.$inferInsert;
+export type IndustryCollaboration = typeof industryCollaborations.$inferSelect;
+export type NewIndustryCollaboration = typeof industryCollaborations.$inferInsert;
+export type ProjectPilot = typeof projectPilots.$inferSelect;
+export type NewProjectPilot = typeof projectPilots.$inferInsert;
+export type SavedProject = typeof savedProjects.$inferSelect;
+export type NewSavedProject = typeof savedProjects.$inferInsert;
+export type InterestRequest = typeof interestRequests.$inferSelect;
+export type NewInterestRequest = typeof interestRequests.$inferInsert;
+export type Notification = typeof notifications.$inferSelect;
+export type NewNotification = typeof notifications.$inferInsert;
+
 
 
