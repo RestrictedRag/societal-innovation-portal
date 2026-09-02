@@ -19,7 +19,7 @@ import {
 
 const DEMO_PASSWORD = 'DemoPassword@2026';
 
-// Helper to generate normalized 1024-dim dummy vector for HNSW index
+// Generates a deterministic normalized 1024-dim vector
 function generateDemoEmbedding(seed: number): number[] {
   const vec: number[] = [];
   let sumSq = 0;
@@ -33,9 +33,11 @@ function generateDemoEmbedding(seed: number): number[] {
 }
 
 async function registerNeonAuthUser(email: string, name: string): Promise<string> {
-  // If running locally against Next.js, attempt registration via auth endpoint
   try {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+
     const res = await fetch('https://localhost:3000/api/auth/sign-up/email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -44,7 +46,9 @@ async function registerNeonAuthUser(email: string, name: string): Promise<string
         password: DEMO_PASSWORD,
         name,
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
 
     if (res.ok) {
       const data = await res.json();
@@ -53,28 +57,24 @@ async function registerNeonAuthUser(email: string, name: string): Promise<string
       }
     }
   } catch {
-    // If dev server is not active during seed run, fallback to deterministic auth UUID
+    // Fallback if local auth endpoint is offline or timed out
   }
-  return `demo-neon-auth-${email.replace(/[^a-zA-Z0-9]/g, '-')}`;
+  return `demo-auth-${email.replace(/[^a-zA-Z0-9]/g, '-')}`;
 }
 
 export async function seedDemoData() {
-  console.log('🚀 Starting CivicNexus Demo Ecosystem Seeder...');
+  console.log('🚀 [CivicNexus] Seeding presentation dataset into Neon PostgreSQL...');
 
-  // ─────────────────────────────────────────────────────────────
-  // 1. Ensure Accredited Universities
-  // ─────────────────────────────────────────────────────────────
-  console.log('📌 Seeding Universities...');
+  // 1. Ensure Universities
+  console.log('🏛️  Ensuring Universities...');
   const uniDefinitions = [
     { name: 'Indian Institute of Technology Delhi (IIT Delhi)', serviceRadiusKm: 50 },
     { name: 'Indian Institute of Technology Bombay (IIT Bombay)', serviceRadiusKm: 50 },
     { name: 'Indian Institute of Science (IISc Bangalore)', serviceRadiusKm: 50 },
     { name: 'University of Delhi', serviceRadiusKm: 30 },
-    { name: 'BITS Pilani', serviceRadiusKm: 40 },
   ];
 
   const universityMap: Record<string, string> = {};
-
   for (const u of uniDefinitions) {
     let existing = await db.query.universities.findFirst({
       where: eq(universities.name, u.name),
@@ -96,13 +96,9 @@ export async function seedDemoData() {
 
   const iitDelhiId = universityMap['Indian Institute of Technology Delhi (IIT Delhi)'];
   const iitBombayId = universityMap['Indian Institute of Technology Bombay (IIT Bombay)'];
-  const iiscBangaloreId = universityMap['Indian Institute of Science (IISc Bangalore)'];
 
-  // ─────────────────────────────────────────────────────────────
-  // 2. Seed Dedicated Demo Personas
-  // ─────────────────────────────────────────────────────────────
-  console.log('👤 Seeding Dedicated Demo Accounts...');
-
+  // 2. Ensure Dedicated Demo Accounts
+  console.log('👤 Ensuring Dedicated Demo Personas...');
   const demoAccounts = [
     {
       email: 'demo.citizen@civicnexus.demo',
@@ -116,6 +112,7 @@ export async function seedDemoData() {
       yearOfStudy: null,
       skills: null,
       interests: ['Public Infrastructure', 'Clean Water', 'Neighborhood Safety'],
+      preferredProjectType: null,
       expertise: null,
       bio: 'Active civic resident reporting urban municipal bottlenecks in South Delhi.',
       universityId: null,
@@ -166,6 +163,7 @@ export async function seedDemoData() {
       yearOfStudy: null,
       skills: null,
       interests: ['Urban Technology', 'Intelligent Infrastructure', 'Sustainable Systems'],
+      preferredProjectType: null,
       expertise: ['Machine Learning & Computer Vision', 'Embedded Systems & IoT', 'Water Resource Management', 'Environmental Impact Assessment'],
       bio: 'Professor and Lab Director for Cyber-Physical Urban Systems, mentoring student capstone innovations.',
       universityId: iitDelhiId,
@@ -182,6 +180,7 @@ export async function seedDemoData() {
       yearOfStudy: null,
       skills: null,
       interests: ['Smart Infrastructure', 'IoT', 'AI', 'Sustainability', 'Clean Energy'],
+      preferredProjectType: null,
       expertise: null,
       bio: 'Vice President of Open Innovation at NexGen Urban Technologies, deploying enterprise pilot testbeds.',
       universityId: null,
@@ -198,6 +197,7 @@ export async function seedDemoData() {
       yearOfStudy: null,
       skills: null,
       interests: null,
+      preferredProjectType: null,
       expertise: null,
       bio: 'National civic moderation lead and compliance supervisor for CivicNexus SIH platform.',
       universityId: null,
@@ -205,14 +205,12 @@ export async function seedDemoData() {
   ];
 
   const userMap: Record<string, string> = {};
-
   for (const acc of demoAccounts) {
     let existing = await db.query.users.findFirst({
       where: eq(users.email, acc.email),
     });
 
     if (existing) {
-      // Update profile attributes to match demo specification
       const [updated] = await db
         .update(users)
         .set({
@@ -267,11 +265,8 @@ export async function seedDemoData() {
   const facultyUserId = userMap['demo.faculty@civicnexus.demo'];
   const industryUserId = userMap['demo.industry@civicnexus.demo'];
 
-  // ─────────────────────────────────────────────────────────────
-  // 3. Seed Realistic Citizen Problems Across Categorical Taxonomy
-  // ─────────────────────────────────────────────────────────────
-  console.log('📋 Seeding Realistic Citizen Problems...');
-
+  // 3. Ensure Citizen Problems (10 Realistic Problems)
+  console.log('📋 Ensuring Citizen Problems...');
   const problemDefinitions = [
     {
       key: 'prob_water_leak_ringroad',
@@ -426,7 +421,6 @@ export async function seedDemoData() {
   ];
 
   const problemMap: Record<string, string> = {};
-
   for (let i = 0; i < problemDefinitions.length; i++) {
     const p = problemDefinitions[i];
     let existing = await db.query.citizenProblems.findFirst({
@@ -473,12 +467,12 @@ export async function seedDemoData() {
       problemMap[p.key] = created.id;
     }
 
-    // Embeddings
     const probId = problemMap[p.key];
+
+    // Seed Embeddings
     const existingEmb = await db.query.problemEmbeddings.findFirst({
       where: eq(problemEmbeddings.problemId, probId),
     });
-
     if (!existingEmb) {
       await db.insert(problemEmbeddings).values({
         problemId: probId,
@@ -487,7 +481,7 @@ export async function seedDemoData() {
       });
     }
 
-    // Community Upvotes
+    // Seed Upvotes
     const existingUpvote = await db.query.problemUpvotes.findFirst({
       where: eq(problemUpvotes.problemId, probId),
     });
@@ -499,13 +493,10 @@ export async function seedDemoData() {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // 4. Seed Realistic Projects (Research & Problem-Solving)
-  // ─────────────────────────────────────────────────────────────
-  console.log('🔬 Seeding University R&D Projects...');
-
+  // 4. Ensure University Projects & Milestones
+  console.log('🔬 Ensuring University R&D Projects...');
   const projectDefinitions = [
-    // ── Completed Solution 1 (Water Leakage) ──
+    // Completed Solution 1
     {
       key: 'proj_water_leak_ultrasonic',
       problemKey: 'prob_water_leak_ringroad',
@@ -528,7 +519,7 @@ export async function seedDemoData() {
         { amount: '10000', status: 'RELEASED' as const },
       ],
     },
-    // ── Completed Solution 2 (Smart Streetlight) ──
+    // Completed Solution 2
     {
       key: 'proj_smart_streetlight_mesh',
       problemKey: 'prob_solar_microgrid_voltage',
@@ -549,7 +540,7 @@ export async function seedDemoData() {
         { amount: '18000', status: 'RELEASED' as const },
       ],
     },
-    // ── Active Research Project 1 (Edge AI Traffic) ──
+    // Active Research Project 1
     {
       key: 'proj_edge_ai_traffic',
       problemKey: 'prob_traffic_crossing_junction',
@@ -569,7 +560,7 @@ export async function seedDemoData() {
         { amount: '20000', status: 'HELD' as const },
       ],
     },
-    // ── Active Problem-Solving Project 2 (Smart Waste Segregation) ──
+    // Active Problem-Solving Project 2
     {
       key: 'proj_waste_segregation_vision',
       problemKey: 'prob_waste_segregation_market',
@@ -588,7 +579,7 @@ export async function seedDemoData() {
         { amount: '14000', status: 'HELD' as const },
       ],
     },
-    // ── Active Research Project 2 (Canal Telemetry) ──
+    // Active Research Project 2
     {
       key: 'proj_canal_telemetry_lora',
       problemKey: 'prob_canal_irrigation_sluice',
@@ -607,7 +598,7 @@ export async function seedDemoData() {
         { amount: '12000', status: 'HELD' as const },
       ],
     },
-    // ── At-Risk Project (Drainage Overflow) ──
+    // At-Risk Project
     {
       key: 'proj_drainage_culvert_at_risk',
       problemKey: 'prob_drainage_culvert_flood',
@@ -630,7 +621,6 @@ export async function seedDemoData() {
   ];
 
   const projectMap: Record<string, string> = {};
-
   for (const proj of projectDefinitions) {
     const problemId = problemMap[proj.problemKey];
     if (!problemId) continue;
@@ -713,11 +703,8 @@ export async function seedDemoData() {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // 5. Seed Industry Needs Board & Multi-Resource Offers
-  // ─────────────────────────────────────────────────────────────
-  console.log('🏢 Seeding Industry Needs & Resource Offerings...');
-
+  // 5. Ensure Industry Needs & Multi-Resource Offers
+  console.log('🏢 Ensuring Industry Needs & Resource Offers...');
   const industryNeedDefs = [
     {
       title: 'High-Throughput Optical Sorter for Mixed Recyclable Plastics',
@@ -760,7 +747,7 @@ export async function seedDemoData() {
     }
   }
 
-  // Seed Multi-Resource Offers on Active Projects
+  // Resource Offers on Project 1
   const waterLeakProjectId = projectMap['proj_water_leak_ultrasonic'];
   if (waterLeakProjectId) {
     const existingOffers = await db.query.resourceOffers.findMany({
@@ -794,23 +781,23 @@ export async function seedDemoData() {
     }
   }
 
-  console.log('✅ CivicNexus Live Presentation Demo Data successfully seeded into Neon PostgreSQL!');
+  console.log('✨ [CivicNexus] Presentation demo dataset successfully seeded into database!');
   return {
+    success: true,
     accountsSeeded: demoAccounts.length,
     problemsSeeded: problemDefinitions.length,
     projectsSeeded: projectDefinitions.length,
   };
 }
 
-// Allow direct CLI execution: npx tsx src/db/seed-demo.ts
 if (require.main === module) {
   seedDemoData()
     .then((res) => {
-      console.log('Seed summary:', res);
+      console.log('Result:', JSON.stringify(res, null, 2));
       process.exit(0);
     })
     .catch((err) => {
-      console.error('Seeding error:', err);
+      console.error('Seed execution error:', err);
       process.exit(1);
     });
 }

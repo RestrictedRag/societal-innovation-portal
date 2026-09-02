@@ -53,9 +53,9 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickFill = (email: string) => {
+  const handleQuickFill = (email: string, password = 'DemoPassword@2026') => {
     setValue('email', email);
-    setValue('password', 'password123');
+    setValue('password', password);
   };
 
   return (
@@ -97,34 +97,48 @@ export default function LoginPage() {
         {/* Demo Fast Login Selector */}
         <div className="pt-4 border-t border-slate-100">
           <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 text-center">
-            Demo Test Accounts
+            Demo Presentation Accounts
           </p>
-          <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
             <button
               type="button"
-              onClick={() => handleQuickFill('prathviraj494@gmail.com')}
-              className="px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 font-semibold hover:bg-slate-100 transition text-left truncate"
+              onClick={() => handleQuickFill('demo.citizen@civicnexus.demo')}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-semibold hover:bg-slate-100 transition text-left truncate"
             >
               👤 Citizen
             </button>
             <button
               type="button"
-              onClick={() => handleQuickFill('student.valid.1788197151905@example.com')}
-              className="px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 font-semibold hover:bg-slate-100 transition text-left truncate"
+              onClick={() => handleQuickFill('demo.student.cse@civicnexus.demo')}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-semibold hover:bg-slate-100 transition text-left truncate"
             >
-              🎓 Student
+              🎓 Student (CSE)
             </button>
             <button
               type="button"
-              onClick={() => handleQuickFill('test.faculty.1788288322979@example.com')}
-              className="px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 font-semibold hover:bg-slate-100 transition text-left truncate"
+              onClick={() => handleQuickFill('demo.student.iot@civicnexus.demo')}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-semibold hover:bg-slate-100 transition text-left truncate"
+            >
+              ⚡ Student (IoT)
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickFill('demo.faculty@civicnexus.demo')}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-semibold hover:bg-slate-100 transition text-left truncate"
             >
               🏛️ Faculty
             </button>
             <button
               type="button"
-              onClick={() => handleQuickFill('demo_admin@example.com')}
-              className="px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 font-semibold hover:bg-slate-100 transition text-left truncate"
+              onClick={() => handleQuickFill('demo.industry@civicnexus.demo')}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-semibold hover:bg-slate-100 transition text-left truncate"
+            >
+              🏢 Industry
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickFill('demo.admin@civicnexus.demo')}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 font-semibold hover:bg-slate-100 transition text-left truncate"
             >
               🛡️ Admin
             </button>
