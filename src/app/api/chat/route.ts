@@ -1,5 +1,5 @@
 import { eq, sql } from 'drizzle-orm';
-import { streamText, tool, stepCountIs } from 'ai';
+import { streamText, tool, stepCountIs, createUIMessageStream, createUIMessageStreamResponse } from 'ai';
 import { z } from 'zod';
 import { NextResponse } from 'next/server';
 
@@ -310,7 +310,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Fallback response if API key is not present or stream failed
+    // Fallback response if API key is not present, quota exhausted, or stream failed
     const lastUserQuery = getMessageText(latestUserMsg ?? {}).toLowerCase();
     let fallbackReply = "I am the CivicNexus platform assistant. How can I help you understand problem reporting, university capstone claiming, or corporate escrow funding?";
 
@@ -319,17 +319,27 @@ export async function POST(request: Request) {
       fallbackReply = `${helpRes.results[0].title}:\n\n${helpRes.results[0].content}`;
     }
 
-    const encoder = new TextEncoder();
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(encoder.encode(`0:${JSON.stringify(fallbackReply)}\n`));
-        controller.close();
+    if (userId && currentSessionId) {
+      await db.insert(chatMessages).values({
+        sessionId: currentSessionId,
+        role: 'assistant',
+        content: fallbackReply,
+      }).catch(() => {});
+    }
+
+    const fallbackStream = createUIMessageStream({
+      execute: ({ writer }) => {
+        writer.write({
+          type: 'text-delta',
+          id: `fallback_${Date.now()}`,
+          delta: fallbackReply,
+        });
       },
     });
 
-    return new Response(stream, {
+    return createUIMessageStreamResponse({
+      stream: fallbackStream,
       headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
         ...(currentSessionId ? { 'x-chat-session-id': currentSessionId } : {}),
       },
     });
