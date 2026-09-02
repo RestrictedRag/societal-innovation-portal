@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CivicNexus Admin Moderation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Source+Serif+4:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#002117",
+                        "primary-fixed": "#b0f0d6",
+                        "error-container": "#ffdad6",
+                        "secondary": "#99462a",
+                        "outline-variant": "#bfc9c3",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#ffb59e",
+                        "secondary-container": "#fe9572",
+                        "on-tertiary-fixed": "#2f1500",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "background": "#f8f9ff",
+                        "surface-dim": "#d0dbed",
+                        "surface-container": "#e6eeff",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#404944",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "on-secondary-fixed-variant": "#7a2f15",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-surface": "#121c2a",
+                        "secondary-fixed": "#ffdbd0",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "on-primary-container": "#80bea6",
+                        "tertiary-container": "#6a3700",
+                        "surface-variant": "#d9e3f6",
+                        "tertiary": "#4a2400",
+                        "on-background": "#121c2a",
+                        "on-tertiary-container": "#ff9939",
+                        "primary-container": "#064e3b",
+                        "inverse-primary": "#95d3ba",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container-low": "#eff4ff",
+                        "primary": "#003527",
+                        "outline": "#707974",
+                        "surface-tint": "#2b6954",
+                        "surface-container-high": "#dee9fc",
+                        "primary-fixed-dim": "#95d3ba",
+                        "on-secondary-container": "#762c12",
+                        "surface-bright": "#f8f9ff",
+                        "surface-container-highest": "#d9e3f6",
+                        "surface": "#f8f9ff",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#ffdcc3",
+                        "inverse-surface": "#27313f",
+                        "on-secondary-fixed": "#390b00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "xs": "4px",
+                        "gutter": "24px",
+                        "base": "8px",
+                        "max-width": "1440px",
+                        "lg": "48px",
+                        "margin-desktop": "64px",
+                        "md": "24px",
+                        "xl": "80px",
+                        "sm": "12px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["\"Source Serif 4\""],
+                        "headline-md": ["\"Source Serif 4\""],
+                        "label-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-lg": ["\"Source Serif 4\""],
+                        "headline-lg-mobile": ["\"Source Serif 4\""],
+                        "body-md": ["Hanken Grotesk"],
+                        "label-sm": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(6, 78, 59, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen font-sans antialiased overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 bg-surface/60 dark:bg-surface-dim/60 backdrop-blur-md border-b border-white/30 dark:border-outline-variant/20 shadow-sm transition-colors duration-300">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Nexus Civic</span>
+</div>
+<div class="flex-1 flex justify-start pl-8 max-w-md hidden md:flex">
+<div class="relative w-full max-w-sm">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/70" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-[#F3EFE0] border border-white/30 rounded-full font-body-md text-on-surface focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" placeholder="Search moderation tasks..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-on-surface-variant hover:bg-primary-container/10 p-2 rounded-full transition-colors cursor-pointer active:opacity-80 relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="text-on-surface-variant hover:bg-primary-container/10 p-2 rounded-full transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<img alt="User profile" class="w-8 h-8 rounded-full object-cover border border-white/50 cursor-pointer hover:opacity-80 transition-opacity" data-alt="A professional headshot of a person with a warm smile, wearing business casual attire, against a light gray background, conveying a sense of civic duty and approachable leadership. Modern lighting, sharp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfO-68P9HEPYgLG89Js98-xpBNQSQnZRKN-KCZ5Uj3xVOUwc617qruXSQs8JmSNHSperC0dI_abp6GTgFE-BwxkdmOpfSw5W50Y3x2u61q1yZKA03TP0WN5gZEaWRBM3I8NHuCRKws5QmQRCwjO-wJgHM0E31UlwyVoPlI26NtJbzgtq_EoqCUKaUcOh4l893364P2J3ZlrcI9lp-i2FLBIApfMmSlFCxqWY8veGCgwoUU7z8G2mQJVA"/>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="hidden md:flex fixed left-0 top-16 h-[calc(100vh-64px)] w-[280px] flex-col p-md z-40 bg-surface/40 dark:bg-surface-container-low/40 backdrop-blur-lg border-r border-white/30 dark:border-outline-variant/10 shadow-sm transition-transform duration-300">
+<div class="mb-8 p-4 glass-panel rounded-xl flex items-center gap-3 group hover:translate-x-1 transition-transform duration-200 cursor-pointer">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center text-white font-bold font-headline-md">
+                PN
+            </div>
+<div>
+<h2 class="font-label-md text-label-md font-bold text-primary leading-tight">Project Nexus</h2>
+<p class="text-xs text-on-surface-variant mt-0.5">Innovation Hub</p>
+</div>
+</div>
+<div class="mb-6 px-2">
+<button class="w-full py-2.5 px-4 bg-primary-container text-white rounded-lg font-label-md text-label-md hover:bg-primary transition-colors flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+                New Initiative
+            </button>
+</div>
+<nav class="flex-1 flex flex-col gap-1 overflow-y-auto pr-2 custom-scrollbar">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 font-label-md text-label-md transition-all group hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<!-- Active Tab: Challenges -->
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold font-label-md text-label-md transition-all group hover:translate-x-1 duration-200 shadow-sm" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="emoji_events">emoji_events</span>
+                Challenges
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 font-label-md text-label-md transition-all group hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors" data-icon="account_tree">account_tree</span>
+                Projects
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 font-label-md text-label-md transition-all group hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors" data-icon="insights">insights</span>
+                Impact
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 font-label-md text-label-md transition-all group hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors" data-icon="menu_book">menu_book</span>
+                Resources
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 font-label-md text-label-md transition-all group hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:text-primary transition-colors" data-icon="hub">hub</span>
+                Network
+            </a>
+</nav>
+<div class="mt-auto pt-4 border-t border-white/20">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high/50 font-label-md text-label-md transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help">help</span>
+                Help
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high/50 font-label-md text-label-md transition-all group" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="logout">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="pt-[88px] md:pl-[304px] px-margin-mobile md:pr-margin-desktop pb-24 md:pb-12 min-h-screen relative z-10">
+<!-- Background decorative grid (Nexus theme) -->
+<div class="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(to_right,#064E3B_1px,transparent_1px),linear-gradient(to_bottom,#064E3B_1px,transparent_1px)] bg-[size:32px_32px] -z-10"></div>
+<!-- Page Header -->
+<header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background mb-2">Moderation Queue</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">Review and manage community submissions, flags, and platform integrity.</p>
+</div>
+<!-- Quick Stats Bento -->
+<div class="flex gap-4 glass-panel rounded-xl p-3 shrink-0">
+<div class="px-4 border-r border-white/30 text-center">
+<div class="font-headline-md text-headline-md text-primary font-bold">12</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Pending</div>
+</div>
+<div class="px-4 border-r border-white/30 text-center">
+<div class="font-headline-md text-headline-md text-error font-bold">3</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Flagged</div>
+</div>
+<div class="px-4 text-center">
+<div class="font-headline-md text-headline-md text-primary-container font-bold">48</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Resolved Today</div>
+</div>
+</div>
+</header>
+<!-- Moderation Tabs -->
+<div class="border-b border-outline-variant/30 mb-6 flex gap-6 overflow-x-auto hide-scrollbar">
+<button class="pb-3 border-b-2 border-primary text-primary font-label-md text-label-md px-1 whitespace-nowrap">Challenges</button>
+<button class="pb-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline-variant/50 font-label-md text-label-md px-1 whitespace-nowrap transition-colors">Users</button>
+<button class="pb-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline-variant/50 font-label-md text-label-md px-1 whitespace-nowrap transition-colors">Projects</button>
+<button class="pb-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface hover:border-outline-variant/50 font-label-md text-label-md px-1 whitespace-nowrap transition-colors">Reports</button>
+</div>
+<!-- Filter/Action Bar -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+<div class="flex gap-2">
+<button class="glass-panel px-4 py-2 rounded-lg font-label-sm text-label-sm text-primary-container flex items-center gap-2 hover:bg-white/40 transition-colors border-primary-container/20 border">
+<span class="material-symbols-outlined text-[16px]" data-icon="filter_list">filter_list</span>
+                    Needs Review
+                </button>
+<button class="px-4 py-2 rounded-lg font-label-sm text-label-sm text-on-surface-variant hover:bg-surface-variant/50 transition-colors">
+                    Flagged
+                </button>
+<button class="px-4 py-2 rounded-lg font-label-sm text-label-sm text-on-surface-variant hover:bg-surface-variant/50 transition-colors">
+                    Approved
+                </button>
+</div>
+<div class="relative w-full sm:w-auto">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/70 text-[18px]" data-icon="sort">sort</span>
+<select class="w-full sm:w-48 pl-10 pr-8 py-2 bg-[#F3EFE0] border border-white/30 rounded-lg font-label-sm text-label-sm text-on-surface focus:outline-none focus:border-primary-container appearance-none cursor-pointer">
+<option>Oldest First</option>
+<option>Newest First</option>
+<option>Highest Priority</option>
+</select>
+</div>
+</div>
+<!-- Content Grid (Moderation Cards) -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+<!-- Card 1: Pending Challenge -->
+<article class="glass-panel rounded-xl p-6 relative group overflow-hidden">
+<!-- Status indicator line -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary-container"></div>
+<div class="flex justify-between items-start mb-4">
+<div class="flex gap-2 items-center">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-secondary-container/20 text-secondary-container font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-container mr-1.5"></span> Pending Review
+                        </span>
+<span class="text-xs text-outline font-label-sm">Submitted 2h ago</span>
+</div>
+<!-- Node connection aesthetic -->
+<div class="hidden sm:flex items-center gap-2 opacity-40">
+<div class="w-2 h-2 rounded-full border border-primary-container"></div>
+<div class="w-8 h-px bg-outline-variant border-dashed border-t"></div>
+<div class="w-2 h-2 rounded-full bg-primary-container"></div>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Urban Canopy Expansion Initiative</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4 line-clamp-2">A proposal to plant 500 native trees in district 4 to reduce urban heat islands and improve air quality. Seeking volunteers and initial funding.</p>
+<div class="flex items-center gap-3 mb-6 bg-surface-container-low/50 p-3 rounded-lg border border-white/40">
+<img alt="Submitter avatar" class="w-8 h-8 rounded-full object-cover" data-alt="A small circular avatar of a diverse young professional, wearing a green sustainable organization t-shirt, smiling gently in a bright outdoor setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuARDBJ0c8nmD73Imay3MvpK2HfGrROjPwu-yrLUcUHZsoEpI0uAZWZZV8a9vIjjn6gTqE0HQ_QNimxqjH8MeZeQu-MhkFxAYTiFWfsbqdo5P4V18VX309P10ESAy3J-BwKSAjl6lSvXn1gEPSNxwAH3x8tmqeaIh9hOmRTcNHifjYNAuCvCM2goDnOxrosMVj_06AsyyNdxm3fA3PXlJ90gY3DMde5qET3xop6CHrjJIRi6kM6myZqAww"/>
+<div>
+<div class="font-label-sm text-label-sm font-semibold text-on-surface">Elena Rostova</div>
+<div class="text-[10px] text-outline font-label-sm uppercase">Community Organizer</div>
+</div>
+<button class="ml-auto text-primary-container hover:underline font-label-sm text-label-sm text-xs">View History</button>
+</div>
+<div class="flex flex-wrap gap-3 mt-auto">
+<button class="flex-1 bg-primary-container text-white py-2 px-4 rounded-lg font-label-md text-label-md hover:bg-primary transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="check_circle">check_circle</span> Approve
+                    </button>
+<button class="flex-1 bg-transparent border border-primary-container text-primary-container py-2 px-4 rounded-lg font-label-md text-label-md hover:bg-primary-container/5 transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="visibility">visibility</span> Review Details
+                    </button>
+<button class="p-2 border border-error/30 text-error rounded-lg hover:bg-error/10 transition-colors" title="Flag/Reject">
+<span class="material-symbols-outlined" data-icon="flag">flag</span>
+</button>
+</div>
+</article>
+<!-- Card 2: Another Pending Challenge (Slightly different state) -->
+<article class="glass-panel rounded-xl p-6 relative group overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-error"></div>
+<div class="flex justify-between items-start mb-4">
+<div class="flex gap-2 items-center">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-error/10 text-error font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px] mr-1" data-icon="warning">warning</span> Flagged (Automated)
+                        </span>
+<span class="text-xs text-outline font-label-sm">Submitted 5h ago</span>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Neighborhood Watch Drone Program</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4 line-clamp-2">Implementing continuous drone surveillance over the north residential sectors to monitor suspicious activities and report directly to local precinct servers.</p>
+<!-- Automated Flag Reason -->
+<div class="mb-4 p-3 rounded bg-[#ffdad6]/40 border border-[#ffdad6] text-[#93000a] text-sm font-body-md flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5" data-icon="policy">policy</span>
+<span><strong>Policy Match:</strong> Contains keywords associated with prohibited surveillance / privacy concerns (Section 4.2).</span>
+</div>
+<div class="flex items-center gap-3 mb-6 bg-surface-container-low/50 p-3 rounded-lg border border-white/40">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant font-bold font-label-sm">JD</div>
+<div>
+<div class="font-label-sm text-label-sm font-semibold text-on-surface">John Doe</div>
+<div class="text-[10px] text-outline font-label-sm uppercase">New User (Unverified)</div>
+</div>
+</div>
+<div class="flex flex-wrap gap-3 mt-auto">
+<button class="flex-1 bg-error text-white py-2 px-4 rounded-lg font-label-md text-label-md hover:bg-error/90 transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="block">block</span> Reject
+                    </button>
+<button class="flex-1 bg-transparent border border-primary-container text-primary-container py-2 px-4 rounded-lg font-label-md text-label-md hover:bg-primary-container/5 transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="gavel">gavel</span> Require Edit
+                    </button>
+</div>
+</article>
+<!-- Audit Trail Snippet (Bento style integration) -->
+<article class="glass-panel rounded-xl p-6 xl:col-span-2">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-outline" data-icon="history">history</span>
+                     Recent Moderation Activity
+                 </h3>
+<div class="space-y-4">
+<!-- Timeline Item -->
+<div class="flex gap-4 relative">
+<!-- Timeline connecting line -->
+<div class="absolute left-2.5 top-6 bottom-[-16px] w-[2px] bg-outline-variant"></div>
+<div class="w-5 h-5 mt-0.5 rounded-full bg-primary-container border-2 border-surface flex items-center justify-center shrink-0 z-10">
+<div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+</div>
+<div class="flex-1 bg-surface-container-low/40 rounded-lg p-3 border border-white/50">
+<p class="font-body-md text-sm text-on-surface"><strong>Admin Sarah</strong> approved challenge <span class="text-primary-container font-medium">"Community Garden Cleanup"</span></p>
+<p class="text-xs text-outline mt-1 font-label-sm">10 minutes ago</p>
+</div>
+</div>
+<!-- Timeline Item -->
+<div class="flex gap-4 relative">
+<div class="w-5 h-5 mt-0.5 rounded-full border-2 border-outline-variant bg-surface flex items-center justify-center shrink-0 z-10">
+</div>
+<div class="flex-1 bg-surface-container-low/40 rounded-lg p-3 border border-white/50">
+<p class="font-body-md text-sm text-on-surface"><strong>System</strong> auto-flagged user <span class="text-primary-container font-medium">@tech_bro_99</span> for spam patterns.</p>
+<p class="text-xs text-outline mt-1 font-label-sm">45 minutes ago</p>
+</div>
+</div>
+</div>
+</article>
+</div>
+</main>
+<!-- Detail Drawer Overlay (Hidden by default, shown here for design completeness as requested) -->
+<!-- In a real app, this would be toggled via JS -->
+<div class="fixed inset-0 bg-on-background/20 backdrop-blur-sm z-[60] flex justify-end transition-opacity duration-300 opacity-0 pointer-events-none" id="detail-drawer">
+<div class="w-full max-w-lg bg-surface h-full shadow-2xl border-l border-white/50 flex flex-col translate-x-full transition-transform duration-300" id="drawer-panel">
+<div class="p-6 border-b border-outline-variant/20 flex justify-between items-center bg-surface-dim/30">
+<h2 class="font-headline-md text-headline-md text-on-surface">Review Challenge</h2>
+<button class="p-2 rounded-full hover:bg-surface-variant text-on-surface-variant transition-colors" onclick="document.getElementById('detail-drawer').classList.add('opacity-0', 'pointer-events-none'); document.getElementById('drawer-panel').classList.add('translate-x-full');">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
+<!-- Drawer content would go here -->
+<p class="font-body-md text-on-surface-variant">Select an item to view full details, history, and moderation tools.</p>
+</div>
+<div class="p-6 border-t border-outline-variant/20 bg-surface-container-lowest flex gap-3">
+<button class="flex-1 bg-transparent border border-outline-variant text-on-surface py-2 rounded-lg font-label-md">Cancel</button>
+<button class="flex-1 bg-primary-container text-white py-2 rounded-lg font-label-md">Submit Decision</button>
+</div>
+</div>
+</div>
+</body></html>

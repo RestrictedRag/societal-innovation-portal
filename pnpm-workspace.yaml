@@ -1,5 +1,7 @@
 allowBuilds:
+  '@firebase/util': set this to true or false
   core-js: true
   esbuild: true
+  protobufjs: set this to true or false
 minimumReleaseAgeExclude:
   - react-hook-form@7.87.0

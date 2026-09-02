@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CivicNexus - Industry Discovery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&amp;family=Source+Serif+4:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#002117",
+                        "primary-fixed": "#b0f0d6",
+                        "error-container": "#ffdad6",
+                        "secondary": "#99462a",
+                        "outline-variant": "#bfc9c3",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#ffb59e",
+                        "secondary-container": "#fe9572",
+                        "on-tertiary-fixed": "#2f1500",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "background": "#f8f9ff",
+                        "surface-dim": "#d0dbed",
+                        "surface-container": "#e6eeff",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#404944",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "on-secondary-fixed-variant": "#7a2f15",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-surface": "#121c2a",
+                        "secondary-fixed": "#ffdbd0",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "on-primary-container": "#80bea6",
+                        "tertiary-container": "#6a3700",
+                        "surface-variant": "#d9e3f6",
+                        "tertiary": "#4a2400",
+                        "on-background": "#121c2a",
+                        "on-tertiary-container": "#ff9939",
+                        "primary-container": "#064e3b",
+                        "inverse-primary": "#95d3ba",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container-low": "#eff4ff",
+                        "primary": "#003527",
+                        "outline": "#707974",
+                        "surface-tint": "#2b6954",
+                        "surface-container-high": "#dee9fc",
+                        "primary-fixed-dim": "#95d3ba",
+                        "on-secondary-container": "#762c12",
+                        "surface-bright": "#f8f9ff",
+                        "surface-container-highest": "#d9e3f6",
+                        "surface": "#f8f9ff",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#ffdcc3",
+                        "inverse-surface": "#27313f",
+                        "on-secondary-fixed": "#390b00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "xs": "4px",
+                        "gutter": "24px",
+                        "base": "8px",
+                        "max-width": "1440px",
+                        "lg": "48px",
+                        "margin-desktop": "64px",
+                        "md": "24px",
+                        "xl": "80px",
+                        "sm": "12px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["\"Source Serif 4\""],
+                        "headline-md": ["\"Source Serif 4\""],
+                        "label-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-lg": ["\"Source Serif 4\""],
+                        "headline-lg-mobile": ["\"Source Serif 4\""],
+                        "body-md": ["Hanken Grotesk"],
+                        "label-sm": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(6, 78, 59, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
+<!-- Top Navigation (Mobile Only) -->
+<nav class="md:hidden fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile h-16 bg-surface/60 backdrop-blur-md text-primary font-body-md shadow-sm border-b border-white/30">
+<div class="font-headline-md font-bold text-primary">Nexus Civic</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined cursor-pointer active:opacity-80">notifications</span>
+<span class="material-symbols-outlined cursor-pointer active:opacity-80">settings</span>
+</div>
+</nav>
+<!-- Main Layout -->
+<div class="flex h-screen pt-16 md:pt-0">
+<!-- Side Navigation (Desktop) -->
+<nav class="hidden md:flex flex-col p-md z-40 bg-surface/40 backdrop-blur-lg border-r border-white/30 shadow-sm fixed left-0 top-0 h-full w-[280px]">
+<div class="mb-lg">
+<h1 class="font-headline-md text-headline-md text-primary mb-xs">Project Nexus</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Innovation Hub</p>
+</div>
+<button class="bg-primary text-on-primary rounded-lg py-sm px-md mb-lg font-label-md flex justify-center items-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+                New Initiative
+            </button>
+<ul class="flex flex-col gap-2 flex-grow">
+<li class="flex items-center gap-3 p-sm rounded-lg font-label-md cursor-pointer text-on-surface-variant hover:bg-surface-container-high/50 hover:translate-x-1 transition-all duration-200 group">
+<span class="material-symbols-outlined group-hover:text-primary">dashboard</span> Dashboard
+                </li>
+<li class="flex items-center gap-3 p-sm rounded-lg font-label-md cursor-pointer text-on-surface-variant hover:bg-surface-container-high/50 hover:translate-x-1 transition-all duration-200 group">
+<span class="material-symbols-outlined group-hover:text-primary">emoji_events</span> Challenges
+                </li>
+<li class="flex items-center gap-3 p-sm rounded-lg font-label-md cursor-pointer text-on-surface-variant hover:bg-surface-container-high/50 hover:translate-x-1 transition-all duration-200 group">
+<span class="material-symbols-outlined group-hover:text-primary">account_tree</span> Projects
+                </li>
+<li class="flex items-center gap-3 p-sm rounded-lg font-label-md cursor-pointer text-on-surface-variant hover:bg-surface-container-high/50 hover:translate-x-1 transition-all duration-200 group">
+<span class="material-symbols-outlined group-hover:text-primary">insights</span> Impact
+                </li>
+<li class="flex items-center gap-3 p-sm rounded-lg font-label-md cursor-pointer text-on-surface-variant hover:bg-surface-container-high/50 hover:translate-x-1 transition-all duration-200 group">
+<span class="material-symbols-outlined group-hover:text-primary">menu_book</span> Resources
+                </li>
+<li class="flex items-center gap-3 p-sm rounded-lg font-label-md cursor-pointer bg-primary-container text-on-primary-container font-bold group">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">hub</span> Network
+                </li>
+</ul>
+<div class="mt-auto flex flex-col gap-2">
+<div class="flex items-center gap-3 p-sm rounded-lg font-label-md cursor-pointer text-on-surface-variant hover:bg-surface-container-high/50 hover:translate-x-1 transition-all duration-200 group">
+<span class="material-symbols-outlined">help</span> Help
+                </div>
+<div class="flex items-center gap-3 p-sm rounded-lg font-label-md cursor-pointer text-on-surface-variant hover:bg-surface-container-high/50 hover:translate-x-1 transition-all duration-200 group">
+<span class="material-symbols-outlined">logout</span> Logout
+                </div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-[280px] p-margin-mobile md:p-margin-desktop overflow-y-auto relative">
+<!-- Background Grid Pattern -->
+<div class="absolute inset-0 z-[-1] opacity-10 pointer-events-none" style="background-image: radial-gradient(circle, #064E3B 1px, transparent 1px); background-size: 32px 32px;"></div>
+<!-- Header Section -->
+<header class="mb-lg flex flex-col md:flex-row md:justify-between md:items-end gap-md">
+<div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-xs">Discover Industry Partners</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Connect with strategic organizations providing expertise, funding, and mentorship to accelerate civic innovation projects.</p>
+</div>
+</header>
+<!-- Filters & Search -->
+<div class="glass-card rounded-xl p-md mb-lg flex flex-col md:flex-row gap-md items-center">
+<div class="relative w-full md:w-1/3">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-[#F3EFE0] border border-[#F3EFE0] focus:border-primary-container rounded-lg py-2 pl-10 pr-4 font-body-md text-on-surface outline-none transition-colors" placeholder="Search partners, expertise..." type="text"/>
+</div>
+<div class="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-hide">
+<button class="whitespace-nowrap px-4 py-2 rounded-full border border-primary-container text-primary-container font-label-md hover:bg-[#F3EFE0] transition-colors">All Types</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant font-label-md hover:bg-surface-container transition-colors">Mentorship</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant font-label-md hover:bg-surface-container transition-colors">Funding</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full border border-outline-variant text-on-surface-variant font-label-md hover:bg-surface-container transition-colors">Pilot Support</button>
+</div>
+<button class="ml-auto flex items-center gap-2 text-primary font-label-md hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">tune</span> Filters
+                </button>
+</div>
+<!-- Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Main Partner List -->
+<div class="lg:col-span-8 flex flex-col gap-gutter">
+<!-- Partner Card 1 -->
+<article class="glass-card rounded-xl p-md flex flex-col sm:flex-row gap-md hover:shadow-md transition-shadow">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0 border border-outline-variant/20 bg-white">
+<img class="w-full h-full object-cover" data-alt="A clean, modern corporate logo of a green leaf intertwined with a stylized building, representing sustainable urban development, set against a pristine white background. High-key lighting emphasizing professionalism and trust in a light-mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB165lhsAIXmoWSf-rJCgDs-MXEdDJrgsif15eucnitqYN0YoYU0T-GhZ9Z2bxJf01FioG3P9zdbzQjhkD0acDH2yW_CIo_4ONgLowGnJE1MyypJ9RABbZMV5LM7vXFAGY1h4B6BXoaYybct-jk32Iklzr9IC0EuQ4RM467ZM5D4Fx1RZ_i9q9WCCzgMtZUDkyh2OnL1JuaIPlsDb8kxEWg3cgylUe1TcwRNGpqyE9AOXW4owgXQZUcww"/>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">UrbanGreen Solutions</h3>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm">
+<span class="material-symbols-outlined text-[16px]">location_on</span> Seattle, WA
+                                    </div>
+</div>
+<span class="bg-[#94A3B8]/20 text-[#121c2a] px-3 py-1 rounded-full font-label-sm">Pilot Support</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">Leading provider of sustainable infrastructure technologies looking to pilot smart energy grids in mid-sized municipalities.</p>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="px-2 py-1 bg-surface-container rounded text-on-surface-variant font-label-sm">Smart Grid</span>
+<span class="px-2 py-1 bg-surface-container rounded text-on-surface-variant font-label-sm">Sustainability</span>
+<span class="px-2 py-1 bg-surface-container rounded text-on-surface-variant font-label-sm">Data Analytics</span>
+</div>
+<div class="border-t border-outline-variant/20 pt-4 flex justify-between items-center">
+<div class="font-label-sm text-on-surface-variant">
+<span class="font-bold text-on-surface">12</span> Active Projects
+                                </div>
+<button class="text-primary font-label-md flex items-center gap-1 hover:opacity-80">
+                                    View Profile <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Partner Card 2 -->
+<article class="glass-card rounded-xl p-md flex flex-col sm:flex-row gap-md hover:shadow-md transition-shadow">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0 border border-outline-variant/20 bg-white">
+<img class="w-full h-full object-cover" data-alt="A sophisticated, abstract logo design featuring intersecting blue and gray lines forming a stylized letter 'C', representing civic tech and data flow, on a clean white background. Professional, modern light-mode style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJSahDlXw3-aaqANGRvhdZec9lbHvc279Hl97M5fg3QwpHKQTSdQbptc8CkbiAgAuRg7rvcdRRkxQ1GLQwz6jR85JwZzrQNNP-IaNroUZHEhqn3yLhYzz3BxD3r_1bNNEpTVGOgh6QYM_rMDBTAJVFJhaiR8ZhtsNzFvDxLL5ElofF7yRouemDPHH8irbDsNBuc_vXUj_GX2V6KiTiYxPZueIvKN9CqoRiTYmQFs_22YI3Uc3brhvPHg"/>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">CivicData Partners</h3>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm">
+<span class="material-symbols-outlined text-[16px]">location_on</span> Austin, TX
+                                    </div>
+</div>
+<span class="bg-[#F59E0B] text-white px-3 py-1 rounded-full font-label-sm">Funding</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">Venture philanthropy fund focused on open data initiatives and digital equity programs for underserved communities.</p>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="px-2 py-1 bg-surface-container rounded text-on-surface-variant font-label-sm">Open Data</span>
+<span class="px-2 py-1 bg-surface-container rounded text-on-surface-variant font-label-sm">Digital Equity</span>
+<span class="px-2 py-1 bg-surface-container rounded text-on-surface-variant font-label-sm">Grant Funding</span>
+</div>
+<div class="border-t border-outline-variant/20 pt-4 flex justify-between items-center">
+<div class="font-label-sm text-on-surface-variant">
+<span class="font-bold text-on-surface">8</span> Active Projects
+                                </div>
+<button class="text-primary font-label-md flex items-center gap-1 hover:opacity-80">
+                                    View Profile <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+<!-- Sidebar / Featured -->
+<aside class="lg:col-span-4 flex flex-col gap-gutter">
+<div class="glass-card rounded-xl p-md">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[#F59E0B]">stars</span> Featured Partners
+                        </h3>
+<ul class="flex flex-col gap-4">
+<li class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden border border-outline-variant/20 bg-white shrink-0">
+<img class="w-full h-full object-cover" data-alt="A clean, minimalist logo of a stylized bridge icon in deep teal, representing connection and infrastructure, set against a bright white background. Corporate, professional light-mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTIhS9I45CuKee5R5nD-5h_eTJ-AGxJWSkgzR9LQ2X2FDT7-QlzM1PpzoPVPYSiSKHqUDRdaUCVOdC3KgJR_XHF9-1w1iVdO7IJ4yimlGt12hbBLNjSqQUH9RcHsZSkAEAG6mziIXBeMKlHfgc0CS0dFCe8kP0VliSFbJTFioPuN8-9mQDcfIW5QjwBu6kdF-5N7RoyY_ZWhfO1mF-lsOK9ftpf0K6XRMqgMahkLMuucHhvoZCzsHMLA"/>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">MetroLink Gov</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Mentorship • Transport</p>
+</div>
+</li>
+<li class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden border border-outline-variant/20 bg-white shrink-0">
+<img class="w-full h-full object-cover" data-alt="A modern tech logo featuring a geometric shield icon in warm beige and deep green, representing civic security and trust, on a crisp white background. Light, professional aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuApVWeBimpf4S8DLVZfqNK3t4nFe9idErrGQ_OpxdFr64I61L_canrA0fF-3GkpZtdajso0n-TJtr5unGVbxb9F9Wox7_RkZE_V6TARqIgt-oOsnP2T0WgE-J1yiXN_OKuhaQfVb9qeeZPACbwRlc6eJhcWJwuoXXykolV0Pd11jWfuB1Wkx6jZAOJyRp-qpPQnOKaU3KkrBFvjOyNscWAuS62xQYDR3yCcIZ8mCchd0cOfLxT_z7-R7w"/>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">SecureCivic Tech</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Pilot Support • Security</p>
+</div>
+</li>
+<li class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden border border-outline-variant/20 bg-white shrink-0">
+<img class="w-full h-full object-cover" data-alt="A vibrant, contemporary logo of overlapping transparent circles in varying shades of amber and green, symbolizing community networks, on a white background. Fresh, innovative light-mode style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBK7QO9Ajw4BQ7EYJKL8qpRMkLvs0RpLekXDurkKtel38UmlKcVOVEjTOcxM_fy58Sxua0J_cccR2xNptXU1evl1rQ2xC4gkgDem0qEMCbpyx0pY_CM0jzCjRJ_5A6kaZM7kEmrxWHk5tcxFeXimFSwKJDKwZpwFWeiEnhKuKSOpPSLpU_Q_lymAumigvoZnuVz5BQ0kWR4PPN2u0RvGlyxnYZlL1DDULVdF4gaH5tYd3zLuBN-ayEegQ"/>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">CommuniHub Network</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Funding • Engagement</p>
+</div>
+</li>
+</ul>
+</div>
+</aside>
+</div>
+</main>
+</div>
+</body></html>

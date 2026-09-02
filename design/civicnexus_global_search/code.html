@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Global Search - CivicNexus</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed": "#002117",
+                      "primary-fixed": "#b0f0d6",
+                      "error-container": "#ffdad6",
+                      "secondary": "#99462a",
+                      "outline-variant": "#bfc9c3",
+                      "on-error-container": "#93000a",
+                      "error": "#ba1a1a",
+                      "secondary-fixed-dim": "#ffb59e",
+                      "secondary-container": "#fe9572",
+                      "on-tertiary-fixed": "#2f1500",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "background": "#f8f9ff",
+                      "surface-dim": "#d0dbed",
+                      "surface-container": "#e6eeff",
+                      "on-secondary": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "on-surface-variant": "#404944",
+                      "on-primary-fixed-variant": "#0b513d",
+                      "on-secondary-fixed-variant": "#7a2f15",
+                      "on-tertiary": "#ffffff",
+                      "on-error": "#ffffff",
+                      "on-surface": "#121c2a",
+                      "secondary-fixed": "#ffdbd0",
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "on-primary-container": "#80bea6",
+                      "tertiary-container": "#6a3700",
+                      "surface-variant": "#d9e3f6",
+                      "tertiary": "#4a2400",
+                      "on-background": "#121c2a",
+                      "on-tertiary-container": "#ff9939",
+                      "primary-container": "#064e3b",
+                      "inverse-primary": "#95d3ba",
+                      "inverse-on-surface": "#eaf1ff",
+                      "surface-container-low": "#eff4ff",
+                      "primary": "#003527",
+                      "outline": "#707974",
+                      "surface-tint": "#2b6954",
+                      "surface-container-high": "#dee9fc",
+                      "primary-fixed-dim": "#95d3ba",
+                      "on-secondary-container": "#762c12",
+                      "surface-bright": "#f8f9ff",
+                      "surface-container-highest": "#d9e3f6",
+                      "surface": "#f8f9ff",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed": "#ffdcc3",
+                      "inverse-surface": "#27313f",
+                      "on-secondary-fixed": "#390b00"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "xs": "4px",
+                      "gutter": "24px",
+                      "base": "8px",
+                      "max-width": "1440px",
+                      "lg": "48px",
+                      "margin-desktop": "64px",
+                      "md": "24px",
+                      "xl": "80px",
+                      "sm": "12px"
+              },
+              "fontFamily": {
+                      "display-lg": ["\"Source Serif 4\""],
+                      "headline-md": ["\"Source Serif 4\""],
+                      "label-md": ["Hanken Grotesk"],
+                      "body-lg": ["Hanken Grotesk"],
+                      "headline-lg": ["\"Source Serif 4\""],
+                      "headline-lg-mobile": ["\"Source Serif 4\""],
+                      "body-md": ["Hanken Grotesk"],
+                      "label-sm": ["Hanken Grotesk"]
+              },
+              "fontSize": {
+                      "display-lg": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                      "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                      "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                      "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                      "headline-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                      "headline-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                      "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                      "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.surface');
+            background-image: 
+                linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .glass-panel {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(6, 78, 59, 0.05);
+        }
+        .search-input {
+            background-color: #F3EFE0;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s ease-in-out;
+        }
+        .search-input:focus {
+            border-color: theme('colors.primary-container');
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(6, 78, 59, 0.1);
+        }
+    </style>
+</head>
+<body class="text-on-surface antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 bg-surface/60 backdrop-blur-md text-primary font-body-md text-body-md border-b border-white/30 shadow-sm">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-bold text-primary">Nexus Civic</span>
+</div>
+<div class="flex items-center gap-md">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-primary-container/10 transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-primary-container/10 transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<img alt="User profile" class="w-8 h-8 rounded-full object-cover border border-outline-variant/30" data-alt="A professional headshot of a diverse user in a modern office environment, warm bright lighting, high resolution, sharp focus, capturing a confident yet approachable civic leader, clean modern background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmh3UyKEU3Rfr_nU8qHjSC8-Zct2Jv68Le-fI2qA82hAta6lvpaGi0Au4smvzjcqt1Ng9dW7KGb_1IEKsHodXr1WhexY9u6-YZPeNn5rdCwc4Fpj-Kr40075YXJgs84L92MOeGXOqudvHuGTcDCR8VtTyjmQHgLrFGWpdfVcWAOdMuInSnJQa2-R9Ad_qMtyzJMpPt12VmvdQUcpwJfR5VmS_cN_31YFEz4cuKTPhtQP3G7SIOyTreQg"/>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<!-- Navigation shell (SideNavBar) is suppressed as this is a focused search journey -->
+<main class="flex-1 mt-16 pt-xl px-margin-mobile md:px-margin-desktop max-w-max-width mx-auto w-full flex flex-col gap-lg">
+<!-- Hero Search Area -->
+<section class="flex flex-col items-center text-center max-w-4xl mx-auto w-full space-y-md">
+<h1 class="font-display-lg text-display-lg text-primary">Global Civic Search</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Discover projects, connect with innovators, and explore civic solutions across the global network.</p>
+<div class="w-full relative mt-md">
+<div class="absolute inset-y-0 left-0 pl-md flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline text-2xl" data-icon="search">search</span>
+</div>
+<input class="search-input w-full py-md pl-xl pr-md rounded-xl font-body-lg text-body-lg text-on-surface placeholder:text-outline-variant" placeholder="Search for 'Sustainable Mobility' or 'Urban Policy'..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-md flex items-center">
+<button class="bg-primary-container text-on-primary rounded-lg px-md py-sm font-label-md text-label-md hover:bg-primary transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- AI Suggestions -->
+<div class="flex flex-wrap justify-center gap-sm mt-sm">
+<span class="flex items-center gap-xs text-on-surface-variant font-label-sm text-label-sm px-sm py-xs rounded-full bg-surface-container-high/50 border border-outline-variant/20 hover:bg-primary-container/5 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[14px] text-primary-container" data-icon="auto_awesome">auto_awesome</span>
+                    Renewable Energy Grids
+                </span>
+<span class="flex items-center gap-xs text-on-surface-variant font-label-sm text-label-sm px-sm py-xs rounded-full bg-surface-container-high/50 border border-outline-variant/20 hover:bg-primary-container/5 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[14px] text-primary-container" data-icon="auto_awesome">auto_awesome</span>
+                    Public Transit Funding
+                </span>
+<span class="flex items-center gap-xs text-on-surface-variant font-label-sm text-label-sm px-sm py-xs rounded-full bg-surface-container-high/50 border border-outline-variant/20 hover:bg-primary-container/5 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-[14px] text-primary-container" data-icon="auto_awesome">auto_awesome</span>
+                    Digital Equity Programs
+                </span>
+</div>
+</section>
+<!-- Layout Grid for Filters and Results -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter mt-lg pb-xl">
+<!-- Filters Sidebar -->
+<aside class="md:col-span-3 flex flex-col gap-md">
+<div class="glass-panel rounded-xl p-md flex flex-col gap-md">
+<h3 class="font-headline-md text-headline-md text-primary">Filters</h3>
+<!-- Filter Group: Type -->
+<div class="space-y-sm">
+<h4 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Entity Type</h4>
+<label class="flex items-center gap-sm cursor-pointer group">
+<input checked="" class="rounded border-outline-variant text-primary-container focus:ring-primary-container/20 w-4 h-4 bg-transparent" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Projects</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer group">
+<input checked="" class="rounded border-outline-variant text-primary-container focus:ring-primary-container/20 w-4 h-4 bg-transparent" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Challenges</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer group">
+<input class="rounded border-outline-variant text-primary-container focus:ring-primary-container/20 w-4 h-4 bg-transparent" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Universities</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer group">
+<input class="rounded border-outline-variant text-primary-container focus:ring-primary-container/20 w-4 h-4 bg-transparent" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Industry</span>
+</label>
+</div>
+<hr class="border-outline-variant/20"/>
+<!-- Filter Group: Domain -->
+<div class="space-y-sm">
+<h4 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Domain</h4>
+<select class="w-full bg-surface/50 border border-outline-variant/30 rounded-lg py-sm px-sm font-body-md text-body-md text-on-surface focus:ring-primary-container/20 focus:border-primary-container/50">
+<option>All Domains</option>
+<option>Sustainability</option>
+<option>Infrastructure</option>
+<option>Policy &amp; Governance</option>
+<option>Health &amp; Wellbeing</option>
+</select>
+</div>
+</div>
+</aside>
+<!-- Results Canvas -->
+<section class="md:col-span-9 flex flex-col gap-md">
+<div class="flex justify-between items-center mb-sm">
+<span class="font-body-md text-body-md text-on-surface-variant">Showing <strong class="text-primary">124</strong> results for "Sustainable Mobility"</span>
+<div class="flex items-center gap-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Sort by:</span>
+<select class="bg-transparent border-none font-label-md text-label-md text-primary cursor-pointer focus:ring-0 p-0">
+<option>Relevance</option>
+<option>Newest</option>
+<option>Highest Impact</option>
+</select>
+</div>
+</div>
+<!-- Bento Grid of Results -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+<!-- Result Card 1 -->
+<article class="glass-panel rounded-xl p-md flex flex-col gap-md group hover:-translate-y-1 transition-transform duration-300">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<span class="bg-[#94A3B8]/20 text-on-surface px-sm py-xs rounded-full font-label-sm text-label-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="account_tree">account_tree</span>
+                                    Project
+                                </span>
+<span class="bg-[#F59E0B] text-white px-sm py-xs rounded-full font-label-sm text-label-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px] text-white" data-icon="verified">verified</span>
+                                    Verified
+                                </span>
+</div>
+<button class="text-outline-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="bookmark_border">bookmark_border</span>
+</button>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-container transition-colors">MetroGreen Transit Initiative</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs line-clamp-2">A comprehensive urban overhaul replacing diesel buses with electric fleets and redesigning key mobility corridors.</p>
+</div>
+<div class="flex items-center gap-md text-outline font-label-sm text-label-sm mt-auto pt-sm">
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]" data-icon="location_on">location_on</span> Seattle, WA</span>
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]" data-icon="groups">groups</span> 14 Partners</span>
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]" data-icon="schedule">schedule</span> Phase 2</span>
+</div>
+</article>
+<!-- Result Card 2 -->
+<article class="glass-panel rounded-xl p-md flex flex-col gap-md group hover:-translate-y-1 transition-transform duration-300">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<span class="bg-primary-container/10 text-primary-container px-sm py-xs rounded-full font-label-sm text-label-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="emoji_events">emoji_events</span>
+                                    Challenge
+                                </span>
+</div>
+<button class="text-outline-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="bookmark_border">bookmark_border</span>
+</button>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary group-hover:text-primary-container transition-colors">Last-Mile Logistics Innovator</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs line-clamp-2">Seeking novel solutions to reduce congestion and emissions in dense urban delivery networks.</p>
+</div>
+<div class="flex items-center gap-md text-outline font-label-sm text-label-sm mt-auto pt-sm">
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]" data-icon="public">public</span> Global</span>
+<span class="flex items-center gap-xs"><span class="material-symbols-outlined text-[16px]" data-icon="paid">paid</span> $50k Grant</span>
+<span class="flex items-center gap-xs text-[#99462a]"><span class="material-symbols-outlined text-[16px]" data-icon="timer">timer</span> Closes in 12d</span>
+</div>
+</article>
+</div>
+</section>
+</div>
+</main>
+</body></html>

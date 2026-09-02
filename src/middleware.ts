@@ -15,6 +15,14 @@ export const config = {
     '/problems/:id/milestones',
     '/problems/:id/sponsor',
     '/problems/:id/resolve',
+    '/admin',
+    '/admin/:path*',
+    '/university',
+    '/university/:path*',
+    '/corporate',
+    '/corporate/:path*',
+    '/my-problems',
+    '/my-problems/:path*',
   ],
 };
 

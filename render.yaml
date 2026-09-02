@@ -1,0 +1,52 @@
+services:
+  # 1. Next.js Web Application Service
+  - type: web
+    name: civic-marketplace-web
+    env: node
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      - key: GEOAPIFY_API_KEY
+        sync: false
+      - key: NEON_AUTH_COOKIE_SECRET
+        sync: false
+      - key: NEON_AUTH_BASE_URL
+        sync: false
+      - key: GOOGLE_GENERATIVE_AI_API_KEY
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: FIREBASE_STORAGE_BUCKET
+        sync: false
+
+  # 2. Production Background Worker Daemon
+  - type: worker
+    name: civic-marketplace-worker
+    env: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npx tsx worker/index.ts
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      - key: GOOGLE_GENERATIVE_AI_API_KEY
+        sync: false

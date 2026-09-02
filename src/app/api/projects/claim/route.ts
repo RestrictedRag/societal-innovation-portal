@@ -1,40 +1,24 @@
 import { NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
-import { auth } from '@/lib/auth/server';
+import { and, eq } from 'drizzle-orm';
 import { db } from '@/db';
-import { citizenProblems, universityProjects, users } from '@/db/schema';
+import { citizenProblems, universityProjects } from '@/db/schema';
+import { requireRole, createRbacErrorResponse } from '@/lib/auth/require-role';
 
 export async function POST(request: Request) {
   try {
-    const { data: session } = await auth.getSession();
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized: missing session' }, { status: 401 });
-    }
-
-    const user = await db.query.users.findFirst({
-      where: eq(users.authUserId, session.user.id),
+    const authResult = await requireRole(['STUDENT', 'FACULTY'], {
+      requireVerified: true,
+      requireUniversity: true,
     });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User profile not found.' }, { status: 404 });
+    if (!authResult.success) {
+      return createRbacErrorResponse(authResult);
     }
-
-    if (!user.isVerified) {
-      return NextResponse.json({ error: 'User account is not verified.' }, { status: 403 });
-    }
-
-    if (user.role !== 'STUDENT' && user.role !== 'FACULTY') {
-      return NextResponse.json({ error: 'Only students or faculty can claim projects' }, { status: 403 });
-    }
-
-    if (!user.universityId) {
-      return NextResponse.json({ error: 'User is not associated with an accredited university.' }, { status: 400 });
-    }
+    const user = authResult.user;
 
     const body = await request.json().catch(() => ({}));
     const problemId = typeof body?.problemId === 'string' ? body.problemId.trim() : null;
     const budget = typeof body?.budget === 'number' || typeof body?.budget === 'string' ? String(body.budget) : '0';
+    const projectType = body?.projectType === 'RESEARCH' ? 'RESEARCH' : 'PROBLEM_SOLVING';
 
     if (!problemId) {
       return NextResponse.json({ error: 'problemId is required' }, { status: 400 });
@@ -48,14 +32,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
     }
 
-    // Check if already claimed by this university
+    // Problems must be in OPEN or IN_PROGRESS status to be claimed
+    if (problem.status !== 'OPEN' && problem.status !== 'IN_PROGRESS') {
+      return NextResponse.json(
+        { error: `Problem cannot be claimed because its current status is ${problem.status}.` },
+        { status: 400 },
+      );
+    }
+
+    const leadUniversityId = user.universityId!;
+
+    // Check if ALREADY claimed by THIS specific university (multi-claim allows multiple universities to compete)
     const existingProject = await db.query.universityProjects.findFirst({
-      where: eq(universityProjects.problemId, problemId),
+      where: and(
+        eq(universityProjects.problemId, problemId),
+        eq(universityProjects.leadUniversityId, leadUniversityId),
+      ),
     });
 
     if (existingProject) {
       return NextResponse.json({
-        message: 'Project already claimed for this problem.',
+        message: 'Your university has already claimed this problem.',
         project: existingProject,
       }, { status: 200 });
     }
@@ -64,20 +61,27 @@ export async function POST(request: Request) {
       .insert(universityProjects)
       .values({
         problemId,
-        leadUniversityId: user.universityId,
+        leadUniversityId,
         claimedByUserId: user.id,
+        claimedByEmail: user.email,
+        projectType,
         status: 'ACTIVE',
+        healthStatus: 'HEALTHY',
         budget,
       })
       .returning();
 
-    await db
-      .update(citizenProblems)
-      .set({
-        claimedBy: user.id,
-        status: 'CLAIMED',
-      })
-      .where(eq(citizenProblems.id, problemId));
+    // If problem was OPEN, update to IN_PROGRESS and record claiming user ID & email
+    if (problem.status === 'OPEN') {
+      await db
+        .update(citizenProblems)
+        .set({
+          status: 'IN_PROGRESS',
+          claimedBy: user.id,
+          claimedByEmail: user.email,
+        })
+        .where(eq(citizenProblems.id, problemId));
+    }
 
     return NextResponse.json({
       message: 'Project claimed successfully.',

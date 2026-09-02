@@ -60,6 +60,11 @@ export const universityProjectStatusEnum = pgEnum('university_project_status', [
   'ABANDONED',
 ] as const);
 
+export const projectTypeEnum = pgEnum('project_type', [
+  'RESEARCH',
+  'PROBLEM_SOLVING',
+] as const);
+
 export const escrowLedgerStatusEnum = pgEnum('escrow_ledger_status', [
   'HELD',
   'RELEASED',
@@ -140,6 +145,13 @@ export const users = pgTable(
     country: text('country'),
     latitude: real('latitude'),
     longitude: real('longitude'),
+    department: text('department'),
+    yearOfStudy: integer('year_of_study'),
+    skills: text('skills').array(),
+    interests: text('interests').array(),
+    preferredProjectType: text('preferred_project_type'),
+    expertise: text('expertise').array(),
+    bio: text('bio'),
     isVerified: boolean('is_verified').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -166,7 +178,11 @@ export const citizenProblems = pgTable(
     spamScore: real('spam_score'),
     domain: problemDomainEnum('domain'),
     secondaryTags: problemDomainEnum('secondary_tags').array(),
+    problemType: text('problem_type'),
+    category: text('category'),
+    subcategory: text('subcategory'),
     claimedBy: uuid('claimed_by').references(() => users.id, { onDelete: 'set null' }),
+    claimedByEmail: text('claimed_by_email'),
     latitude: real('latitude'),
     longitude: real('longitude'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -245,8 +261,12 @@ export const universityProjects = pgTable(
     claimedByUserId: uuid('claimed_by_user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'set null' }),
+    claimedByEmail: text('claimed_by_email'),
+    projectType: projectTypeEnum('project_type').notNull().default('PROBLEM_SOLVING'),
     status: universityProjectStatusEnum('status').notNull().default('ACTIVE'),
+    healthStatus: text('health_status').notNull().default('HEALTHY'),
     budget: numeric('budget', { precision: 16, scale: 2 }).notNull().default('0'),
+    lastActivityAt: timestamp('last_activity_at', { withTimezone: true }).notNull().defaultNow(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
@@ -283,6 +303,38 @@ export const escrowLedger = pgTable('escrow_ledger', {
   status: escrowLedgerStatusEnum('status').notNull().default('HELD'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   releasedAt: timestamp('released_at', { withTimezone: true }),
+});
+
+export const industryNeeds = pgTable('industry_needs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  companyUserId: uuid('company_user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  domain: problemDomainEnum('domain'),
+  targetTrl: integer('target_trl').notNull().default(4),
+  resourceOfferings: text('resource_offerings').array(),
+  status: text('status').notNull().default('OPEN'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const resourceOffers = pgTable('resource_offers', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  projectId: uuid('project_id')
+    .notNull()
+    .references(() => universityProjects.id, { onDelete: 'cascade' }),
+  corporateUserId: uuid('corporate_user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  offeringType: text('offering_type').notNull(),
+  details: text('details').notNull(),
+  status: text('status').notNull().default('OFFERED'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const chatSessions = pgTable('chat_sessions', {
@@ -323,6 +375,8 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   universityProjects: many(universityProjects, { relationName: 'claimedByUserUniversityProjects' }),
   projectUpdates: many(projectUpdates, { relationName: 'verifiedByProjectUpdates' }),
   escrowLedgers: many(escrowLedger, { relationName: 'corporateEscrowLedgers' }),
+  industryNeeds: many(industryNeeds, { relationName: 'companyIndustryNeeds' }),
+  resourceOffers: many(resourceOffers, { relationName: 'corporateResourceOffers' }),
 }));
 
 export const chatSessionsRelations = relations(chatSessions, ({ one, many }) => ({
@@ -411,6 +465,7 @@ export const universityProjectsRelations = relations(universityProjects, ({ one,
   }),
   updates: many(projectUpdates),
   ledgers: many(escrowLedger),
+  resourceOffers: many(resourceOffers),
 }));
 
 export const projectUpdatesRelations = relations(projectUpdates, ({ one }) => ({
@@ -441,11 +496,32 @@ export const escrowLedgerRelations = relations(escrowLedger, ({ one }) => ({
   }),
 }));
 
+export const industryNeedsRelations = relations(industryNeeds, ({ one }) => ({
+  companyUser: one(users, {
+    fields: [industryNeeds.companyUserId],
+    references: [users.id],
+    relationName: 'companyIndustryNeeds',
+  }),
+}));
+
+export const resourceOffersRelations = relations(resourceOffers, ({ one }) => ({
+  project: one(universityProjects, {
+    fields: [resourceOffers.projectId],
+    references: [universityProjects.id],
+  }),
+  corporateUser: one(users, {
+    fields: [resourceOffers.corporateUserId],
+    references: [users.id],
+    relationName: 'corporateResourceOffers',
+  }),
+}));
+
 export type UserRole = (typeof userRoleEnum.enumValues)[number];
 export type ProblemStatus = (typeof problemStatusEnum.enumValues)[number];
 export type MediaStatus = (typeof mediaStatusEnum.enumValues)[number];
 export type ProblemDomain = (typeof problemDomainEnum.enumValues)[number];
 export type UniversityProjectStatus = (typeof universityProjectStatusEnum.enumValues)[number];
+export type ProjectType = (typeof projectTypeEnum.enumValues)[number];
 export type EscrowLedgerStatus = (typeof escrowLedgerStatusEnum.enumValues)[number];
 
 export type User = typeof users.$inferSelect;
@@ -468,5 +544,9 @@ export type ProjectUpdate = typeof projectUpdates.$inferSelect;
 export type NewProjectUpdate = typeof projectUpdates.$inferInsert;
 export type EscrowEntry = typeof escrowLedger.$inferSelect;
 export type NewEscrowEntry = typeof escrowLedger.$inferInsert;
+export type IndustryNeed = typeof industryNeeds.$inferSelect;
+export type NewIndustryNeed = typeof industryNeeds.$inferInsert;
+export type ResourceOffer = typeof resourceOffers.$inferSelect;
+export type NewResourceOffer = typeof resourceOffers.$inferInsert;
 
 

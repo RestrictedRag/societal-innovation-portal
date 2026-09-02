@@ -14,11 +14,13 @@ import {
   RotateCcw,
 } from 'lucide-react';
 
+import { ChatMessageMarkdown } from './ChatMessageMarkdown';
+
 const SUGGESTED_PROMPTS = [
-  "What is the status of my reported problem?",
-  "How does corporate escrow funding work?",
-  "What are the requirements to submit an issue?",
-  "How do universities claim projects?",
+  "Draft a 30-word civic problem description about streetlights",
+  "What is the status of my reported problems?",
+  "How does university research claiming work?",
+  "How does corporate escrow sponsorship work?",
 ];
 
 /** Extract visible text from a v7 UIMessage's parts array. */
@@ -101,24 +103,24 @@ export function ChatWidget() {
       {/* Expanded Chat Panel */}
       {isOpen && (
         <div
-          className="mb-3 flex h-[520px] w-[380px] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900/95 shadow-2xl backdrop-blur-xl transition-all duration-300 animate-in fade-in slide-in-from-bottom-5"
+          className="mb-3 flex h-[580px] w-[420px] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-3xl border border-slate-700/70 bg-slate-900/95 shadow-2xl backdrop-blur-2xl transition-all duration-300 animate-in fade-in slide-in-from-bottom-5"
           style={{
-            boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 25px rgba(59, 130, 246, 0.15)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px rgba(59, 130, 246, 0.18)',
           }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/80 px-4 py-3.5">
+          <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-900/90 px-4 py-3.5">
             <div className="flex items-center space-x-2.5">
-              <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-md">
+              <div className="relative flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-md">
                 <Bot className="h-4 w-4 text-white" />
-                <span className="absolute -bottom-0.5 -right-0.5 flex h-2 w-2">
+                <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
                 </span>
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white">Civic Assistant</h3>
-                <p className="text-[11px] text-slate-400">Scoped Platform AI & Status</p>
+                <h3 className="text-sm font-bold text-white tracking-tight">CivicNexus Assistant</h3>
+                <p className="text-[10px] text-slate-400 font-medium">Gemini AI • Platform Intelligence</p>
               </div>
             </div>
 
@@ -145,15 +147,15 @@ export function ChatWidget() {
           </div>
 
           {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 scrollbar-thin scrollbar-thumb-slate-800">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-slate-800">
             {messages.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-center px-3 text-slate-400">
-                <div className="mb-3 rounded-full bg-blue-500/10 p-3 ring-1 ring-blue-500/20">
+                <div className="mb-3 rounded-2xl bg-gradient-to-tr from-blue-500/20 to-indigo-500/20 p-3.5 ring-1 ring-blue-500/30">
                   <Sparkles className="h-6 w-6 text-blue-400" />
                 </div>
-                <h4 className="text-sm font-medium text-slate-200">How can I help you today?</h4>
-                <p className="mt-1 text-xs text-slate-400">
-                  Ask about your problem reports, claimed university projects, or how the platform works.
+                <h4 className="text-sm font-bold text-slate-100">How can I assist your civic project?</h4>
+                <p className="mt-1 text-xs text-slate-400 max-w-xs leading-relaxed">
+                  Draft problem descriptions, check live database reports, or learn how university capstones and escrow funding work.
                 </p>
 
                 {/* Quick prompt suggestions */}
@@ -163,9 +165,9 @@ export function ChatWidget() {
                       key={idx}
                       type="button"
                       onClick={() => void handleSend(prompt)}
-                      className="rounded-lg border border-slate-800 bg-slate-800/50 px-3 py-2 text-xs text-slate-300 transition-colors hover:border-blue-500/40 hover:bg-slate-800 hover:text-white"
+                      className="rounded-xl border border-slate-800 bg-slate-800/60 px-3 py-2 text-xs text-slate-300 transition-all hover:border-blue-500/40 hover:bg-slate-800 hover:text-white text-left"
                     >
-                      {prompt}
+                      💬 {prompt}
                     </button>
                   ))}
                 </div>
@@ -182,24 +184,28 @@ export function ChatWidget() {
                     className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {m.role !== 'user' && (
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-blue-600/30 text-blue-400 ring-1 ring-blue-500/30">
-                        <Bot className="h-3.5 w-3.5" />
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-blue-600/30 text-blue-400 ring-1 ring-blue-500/30 mt-0.5">
+                        <Bot className="h-4 w-4" />
                       </div>
                     )}
 
                     <div
-                      className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                      className={`rounded-2xl px-4 py-3 text-xs leading-relaxed ${
                         m.role === 'user'
-                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
-                          : 'border border-slate-800/80 bg-slate-800/70 text-slate-200'
+                          ? 'max-w-[80%] bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md font-medium'
+                          : 'max-w-[88%] border border-slate-700/60 bg-slate-800/80 text-slate-100 shadow-sm'
                       }`}
                     >
-                      <div className="whitespace-pre-wrap">{messageText || (m.role === 'assistant' ? 'Processing...' : '')}</div>
+                      {m.role === 'assistant' ? (
+                        <ChatMessageMarkdown content={messageText || 'Thinking...'} />
+                      ) : (
+                        <div className="whitespace-pre-wrap">{messageText}</div>
+                      )}
                     </div>
 
                     {m.role === 'user' && (
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-800 text-slate-400">
-                        <User className="h-3.5 w-3.5" />
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-slate-300 mt-0.5 border border-slate-700">
+                        <User className="h-4 w-4" />
                       </div>
                     )}
                   </div>

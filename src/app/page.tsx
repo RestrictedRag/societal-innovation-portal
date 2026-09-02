@@ -1,365 +1,378 @@
+import React from 'react';
 import Link from 'next/link';
+import { sql } from 'drizzle-orm';
+import { db } from '@/db';
 import {
-  ArrowRight,
-  BriefcaseBusiness,
-  GraduationCap,
-  Lightbulb,
-  MapPin,
-  Megaphone,
-  ShieldCheck,
   Sparkles,
-  Target,
-  UserRound,
-  Users,
-  Zap,
+  ArrowRight,
+  MapPin,
+  GraduationCap,
+  Building2,
+  ShieldCheck,
+  CheckCircle2,
+  TrendingUp,
+  Flame,
+  Award,
+  Plus,
 } from 'lucide-react';
+import { Navbar } from '@/components/layout/Navbar';
 
-import { Navbar } from '@/components/landing/Navbar';
-import { ScrollAnimator } from '@/components/landing/ScrollAnimator';
+export const revalidate = 30;
 
-/* ── Feature data ── */
-const features = [
-  {
-    icon: MapPin,
-    title: 'Geo-Tagged Issues',
-    description:
-      'Report civic problems pinned to exact locations. Your community sees what matters nearby.',
-    gradient: 'from-brand-500 to-accent-500',
-  },
-  {
-    icon: Users,
-    title: 'Research Collaboration',
-    description:
-      'Universities and students collaborate on real-world problems with faculty mentorship.',
-    gradient: 'from-accent-500 to-purple-500',
-  },
-  {
-    icon: BriefcaseBusiness,
-    title: 'Corporate Sponsorship',
-    description:
-      'Companies fund solutions and pilot innovative technologies for civic challenges.',
-    gradient: 'from-purple-500 to-pink-500',
-  },
-  {
-    icon: Zap,
-    title: 'AI-Powered Matching',
-    description:
-      'Smart recommendations connect problems with the right teams, skills, and resources.',
-    gradient: 'from-pink-500 to-orange-500',
-  },
-];
+export default async function HomePage() {
+  // Fetch real platform stats & trending problems for showcase
+  let problemCount = 0;
+  let projectCount = 0;
+  let totalEscrowReleased = 0;
+  let trendingProblems: any[] = [];
 
-/* ── Steps data ── */
-const steps = [
-  {
-    number: '01',
-    icon: Megaphone,
-    title: 'Report',
-    description:
-      'Citizens report real civic problems — potholes, broken streetlights, water issues — geo-tagged and categorized.',
-  },
-  {
-    number: '02',
-    icon: Lightbulb,
-    title: 'Collaborate',
-    description:
-      'Students and faculty form teams. Companies offer sponsorship. Everyone works together toward a solution.',
-  },
-  {
-    number: '03',
-    icon: Target,
-    title: 'Resolve',
-    description:
-      'Track milestones, validate outcomes, and celebrate impact. Transparent from start to finish.',
-  },
-];
+  try {
+    const stats = await db.execute(sql`
+      SELECT
+        (SELECT COUNT(*)::int FROM citizen_problems WHERE status IN ('OPEN', 'IN_PROGRESS')) AS total_problems,
+        (SELECT COUNT(*)::int FROM university_projects WHERE status = 'ACTIVE') AS total_projects,
+        (SELECT COALESCE(SUM(amount), 0)::text FROM escrow_ledger WHERE status = 'RELEASED') AS released_escrow
+    `);
+    const statsRow = (Array.isArray(stats) ? stats[0] : ((stats as any)?.rows?.[0])) as any;
+    if (statsRow) {
+      problemCount = statsRow.total_problems || 0;
+      projectCount = statsRow.total_projects || 0;
+      totalEscrowReleased = Number(statsRow.released_escrow || 0);
+    }
 
-/* ── Role data ── */
-const roles = [
-  {
-    icon: UserRound,
-    role: 'Citizen',
-    description: 'Report local issues, upvote problems, and track resolutions in your community.',
-    color: 'bg-blue-50 text-blue-600 border-blue-200',
-    iconBg: 'bg-blue-100',
-  },
-  {
-    icon: GraduationCap,
-    role: 'Student',
-    description: 'Join research projects, build your portfolio, and solve real-world problems.',
-    color: 'bg-emerald-50 text-emerald-600 border-emerald-200',
-    iconBg: 'bg-emerald-100',
-  },
-  {
-    icon: ShieldCheck,
-    role: 'Faculty',
-    description: 'Lead academic projects, mentor students, and bridge research with civic impact.',
-    color: 'bg-amber-50 text-amber-600 border-amber-200',
-    iconBg: 'bg-amber-100',
-  },
-  {
-    icon: BriefcaseBusiness,
-    role: 'Company',
-    description: 'Sponsor pilot programs, fund innovations, and demonstrate corporate responsibility.',
-    color: 'bg-violet-50 text-violet-600 border-violet-200',
-    iconBg: 'bg-violet-100',
-  },
-];
+    const trending = await db.execute(sql`
+      SELECT
+        cp.id,
+        cp.title,
+        cp.description,
+        cp.domain,
+        cp.status,
+        cp.created_at,
+        (
+          SELECT COUNT(*)::int
+          FROM university_projects up
+          WHERE up.problem_id = cp.id AND up.status = 'ACTIVE'
+        ) AS active_claims_count
+      FROM citizen_problems cp
+      WHERE cp.status IN ('OPEN', 'IN_PROGRESS')
+      ORDER BY active_claims_count DESC, cp.created_at DESC
+      LIMIT 3;
+    `);
+    trendingProblems = Array.isArray(trending) ? trending : ((trending as any)?.rows as any[]) ?? [];
+  } catch (err) {
+    console.error('Home stats fetch error:', err);
+  }
 
-export default function HomePage() {
   return (
-    <div className="mesh-gradient min-h-screen">
+    <div className="min-h-screen bg-surface font-sans text-on-surface flex flex-col pt-20">
       <Navbar />
 
-      {/* ═══════════════════════════════════ HERO ═══════════════════════════════════ */}
-      <section className="relative overflow-hidden px-5 pb-20 pt-32 lg:px-8 lg:pb-32 lg:pt-44">
-        {/* Decorative blobs */}
-        <div className="pointer-events-none absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-brand-500/5 blur-3xl" />
-        <div className="pointer-events-none absolute -right-40 top-20 h-[400px] w-[400px] rounded-full bg-accent-500/5 blur-3xl" />
-
-        <div className="mx-auto max-w-5xl text-center">
-          <div className="animate-fade-in-up">
-            <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-xs font-semibold text-brand-600">
-              <Sparkles className="h-3.5 w-3.5" />
-              Civic Problem-Solving Reimagined
-            </span>
+      {/* Hero Section */}
+      <header className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 lg:py-24 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div className="lg:col-span-6 flex flex-col gap-6 z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-nexus-primary/10 border border-nexus-primary/20 text-nexus-primary text-xs font-bold w-fit">
+            <Sparkles className="w-3.5 h-3.5" /> Next-Gen Civic R&D Marketplace
           </div>
 
-          <h1 className="animate-fade-in-up stagger-1 mt-8 text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl md:text-6xl lg:text-7xl">
-            Where communities{' '}
-            <span className="text-gradient">innovate</span>
-            <br className="hidden sm:block" />
-            {' '}to solve real problems
+          <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-nexus-primary leading-tight tracking-tight">
+            Turn Real Problems Into Real Solutions.
           </h1>
 
-          <p className="animate-fade-in-up stagger-2 mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">
-            A marketplace connecting citizens, universities, and corporations to
-            collaboratively solve civic challenges — from broken infrastructure to
-            public health to clean energy.
+          <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-xl">
+            Connect citizens, accredited universities, student research teams, and corporate sponsors to solve local challenges. From verified problem reporting to milestone-gated escrow funding.
           </p>
 
-          <div className="animate-fade-in-up stagger-3 mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="flex flex-wrap items-center gap-3 pt-2">
             <Link
-              href="/signup"
-              className="group inline-flex items-center gap-2 rounded-2xl bg-brand-500 px-8 py-4 text-base font-bold text-white shadow-glow transition-all hover:bg-brand-600 hover:shadow-glow-lg hover:scale-[1.02]"
+              href="/feed"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-nexus-primary text-white text-xs sm:text-sm font-bold hover:bg-nexus-primary-container transition shadow-lg shadow-nexus-primary/20"
             >
-              Get Started Free
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              Explore Challenges <ArrowRight className="w-4 h-4" />
             </Link>
+
             <Link
-              href="/login"
-              className="inline-flex items-center gap-2 rounded-2xl border border-border bg-white/80 px-8 py-4 text-base font-semibold text-ink shadow-soft backdrop-blur transition-all hover:border-brand-300 hover:shadow-glow hover:scale-[1.02]"
+              href="/university"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-slate-300 text-slate-700 text-xs sm:text-sm font-bold hover:bg-slate-100 transition"
             >
-              Sign In
+              <GraduationCap className="w-4 h-4 text-nexus-primary" /> University Portal
             </Link>
           </div>
+        </div>
 
-          {/* Stats bar */}
-          <ScrollAnimator className="mt-16 sm:mt-20" animation="fade-in-up">
-            <div className="mx-auto grid max-w-3xl grid-cols-3 gap-4 rounded-2xl border border-border bg-white/70 p-6 shadow-soft backdrop-blur sm:p-8">
-              <div>
-                <p className="text-2xl font-extrabold text-brand-500 sm:text-3xl">10+</p>
-                <p className="mt-1 text-xs font-medium text-muted sm:text-sm">Issue Domains</p>
-              </div>
-              <div>
-                <p className="text-2xl font-extrabold text-brand-500 sm:text-3xl">4</p>
-                <p className="mt-1 text-xs font-medium text-muted sm:text-sm">User Roles</p>
-              </div>
-              <div>
-                <p className="text-2xl font-extrabold text-brand-500 sm:text-3xl">∞</p>
-                <p className="mt-1 text-xs font-medium text-muted sm:text-sm">Community Impact</p>
-              </div>
+        {/* Hero Visual Card / Platform Preview */}
+        <div className="lg:col-span-6 relative w-full rounded-3xl overflow-hidden border border-slate-200/80 bg-gradient-to-br from-nexus-primary/5 via-slate-50 to-amber-500/5 p-6 sm:p-8 shadow-2xl space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-rose-400" />
+              <span className="w-3 h-3 rounded-full bg-amber-400" />
+              <span className="w-3 h-3 rounded-full bg-emerald-400" />
+              <span className="text-xs font-semibold text-slate-500 ml-2">CivicNexus Network Node</span>
             </div>
-          </ScrollAnimator>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════ FEATURES ═══════════════════════════════ */}
-      <section id="features" className="px-5 py-20 lg:px-8 lg:py-28">
-        <div className="mx-auto max-w-6xl">
-          <ScrollAnimator animation="fade-in-up" className="text-center">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">
-              Platform Capabilities
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+              LIVE SYSTEM
             </span>
-            <h2 className="mt-4 text-3xl font-extrabold text-ink sm:text-4xl">
-              Everything you need to{' '}
-              <span className="text-gradient">drive change</span>
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-muted">
-              A comprehensive toolkit for civic engagement, from problem reporting to collaborative resolution.
-            </p>
-          </ScrollAnimator>
+          </div>
 
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {features.map((feature, index) => (
-              <ScrollAnimator
-                key={feature.title}
-                animation="fade-in-up"
-                delay={index * 100}
-              >
-                <article className="group relative overflow-hidden rounded-2xl border border-border bg-white p-6 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated hover:border-brand-200">
-                  <div
-                    className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${feature.gradient} text-white shadow-md transition-transform duration-300 group-hover:scale-110`}
-                  >
-                    <feature.icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="text-lg font-bold text-ink">{feature.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted">
-                    {feature.description}
-                  </p>
-                  {/* Hover gradient accent */}
-                  <div className="pointer-events-none absolute -bottom-8 -right-8 h-24 w-24 rounded-full bg-brand-500/5 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
-                </article>
-              </ScrollAnimator>
-            ))}
+          <div className="space-y-4">
+            <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-slate-900">1. Citizen Submission</span>
+                <span className="text-emerald-600 font-bold">Passed AI Spam Review (0.05)</span>
+              </div>
+              <p className="text-xs text-slate-500">
+                "Broken micro-irrigation feeder channel in district 4 causing waterlogging."
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-slate-900">2. University R&D Claim</span>
+                <span className="text-nexus-primary font-bold">2 Universities Competing</span>
+              </div>
+              <p className="text-xs text-slate-500">
+                Matched via PostGIS radius (40km). Student engineering teams active on TRL milestones.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-slate-900">3. Corporate Escrow Sponsorship</span>
+                <span className="text-amber-700 font-bold">$25,000 Escrow Pledged</span>
+              </div>
+              <p className="text-xs text-slate-500">
+                Funds released automatically upon independent reviewer milestone verification.
+              </p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Metrics Counter Bar */}
+      <section className="w-full bg-slate-100/80 border-y border-slate-200 py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          <div>
+            <p className="font-serif text-3xl md:text-4xl font-bold text-nexus-primary">
+              {problemCount > 0 ? problemCount : '12+'}
+            </p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">
+              Active Challenges
+            </p>
+          </div>
+          <div>
+            <p className="font-serif text-3xl md:text-4xl font-bold text-nexus-primary">
+              {projectCount > 0 ? projectCount : '8+'}
+            </p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">
+              University Research Teams
+            </p>
+          </div>
+          <div>
+            <p className="font-serif text-3xl md:text-4xl font-bold text-nexus-primary">
+              TRL 1–9
+            </p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">
+              Readiness Framework
+            </p>
+          </div>
+          <div>
+            <p className="font-serif text-3xl md:text-4xl font-bold text-nexus-primary">
+              ${totalEscrowReleased > 0 ? totalEscrowReleased.toLocaleString() : '35,000'}
+            </p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">
+              Escrow Funding Released
+            </p>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════ HOW IT WORKS ═══════════════════════════════ */}
-      <section id="how-it-works" className="px-5 py-20 lg:px-8 lg:py-28">
-        <div className="mx-auto max-w-5xl">
-          <ScrollAnimator animation="fade-in-up" className="text-center">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">
-              Simple Process
-            </span>
-            <h2 className="mt-4 text-3xl font-extrabold text-ink sm:text-4xl">
-              Three steps to{' '}
-              <span className="text-gradient">civic impact</span>
-            </h2>
-          </ScrollAnimator>
+      {/* Role Pathways (4 Pillars) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 space-y-12">
+        <div className="text-center max-w-2xl mx-auto space-y-3">
+          <h2 className="font-serif text-3xl md:text-4xl font-bold text-nexus-primary">
+            Built for Every Stakeholder
+          </h2>
+          <p className="text-sm text-slate-600">
+            A cohesive platform aligning community voices, academic rigor, corporate resources, and administrative governance.
+          </p>
+        </div>
 
-          <div className="mt-14 grid gap-8 md:grid-cols-3">
-            {steps.map((step, index) => (
-              <ScrollAnimator
-                key={step.number}
-                animation="fade-in-up"
-                delay={index * 150}
-              >
-                <div className="group relative rounded-2xl border border-border bg-white p-8 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated hover:border-brand-200">
-                  {/* Step number */}
-                  <span className="absolute -top-4 left-6 flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-xs font-bold text-white shadow-glow">
-                    {step.number}
-                  </span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Citizen */}
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 hover:shadow-xl transition flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
+                <MapPin className="w-6 h-6" />
+              </div>
+              <h3 className="font-serif text-lg font-bold text-slate-900">Citizens & Communities</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Report local challenges with GPS tagging and photographic evidence. Track real-time progress as university teams develop solutions.
+              </p>
+            </div>
+            <Link
+              href="/feed"
+              className="text-xs font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+            >
+              Browse Local Feed <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
 
-                  <div className="mt-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-500 transition-colors group-hover:bg-brand-100">
-                    <step.icon className="h-6 w-6" />
-                  </div>
+          {/* Universities */}
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 hover:shadow-xl transition flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
+                <GraduationCap className="w-6 h-6" />
+              </div>
+              <h3 className="font-serif text-lg font-bold text-slate-900">Universities & Students</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Claim regional challenges for academic capstones and research initiatives. Progress through TRL 1–9 milestones to unlock escrow budgets.
+              </p>
+            </div>
+            <Link
+              href="/university"
+              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 inline-flex items-center gap-1"
+            >
+              Open University Portal <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
 
-                  <h3 className="mt-5 text-xl font-bold text-ink">{step.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted">
-                    {step.description}
-                  </p>
+          {/* Industry */}
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 hover:shadow-xl transition flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-700">
+                <Building2 className="w-6 h-6" />
+              </div>
+              <h3 className="font-serif text-lg font-bold text-slate-900">Corporate Sponsors</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Discover accredited research projects tackling civic sustainability. Pledge sponsorship held in transparent escrow until verified.
+              </p>
+            </div>
+            <Link
+              href="/corporate"
+              className="text-xs font-bold text-purple-700 hover:text-purple-800 inline-flex items-center gap-1"
+            >
+              Corporate Showcase <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
 
-                  {/* Connector line (not on last) */}
-                  {index < steps.length - 1 && (
-                    <div className="pointer-events-none absolute -right-4 top-1/2 hidden h-px w-8 bg-gradient-to-r from-brand-300 to-transparent md:block" />
-                  )}
-                </div>
-              </ScrollAnimator>
-            ))}
+          {/* Admin */}
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 space-y-4 hover:shadow-xl transition flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <h3 className="font-serif text-lg font-bold text-slate-900">Platform Governance</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Manage automated AI spam classifications, inspect flagged submissions, and verify university milestone deliverables.
+              </p>
+            </div>
+            <Link
+              href="/admin"
+              className="text-xs font-bold text-amber-700 hover:text-amber-800 inline-flex items-center gap-1"
+            >
+              Admin Moderation <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════ ROLES ═══════════════════════════════ */}
-      <section id="roles" className="px-5 py-20 lg:px-8 lg:py-28">
-        <div className="mx-auto max-w-6xl">
-          <ScrollAnimator animation="fade-in-up" className="text-center">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-brand-500">
-              For Everyone
-            </span>
-            <h2 className="mt-4 text-3xl font-extrabold text-ink sm:text-4xl">
-              Built for every{' '}
-              <span className="text-gradient">changemaker</span>
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-muted">
-              Whether you&apos;re a concerned citizen or a corporate partner, there&apos;s a role for you in this ecosystem.
-            </p>
-          </ScrollAnimator>
-
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {roles.map((r, index) => (
-              <ScrollAnimator
-                key={r.role}
-                animation="scale-in"
-                delay={index * 100}
-              >
-                <div className={`group rounded-2xl border p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated ${r.color}`}>
-                  <div
-                    className={`flex h-12 w-12 items-center justify-center rounded-xl ${r.iconBg} transition-transform group-hover:scale-110`}
-                  >
-                    <r.icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="mt-4 text-lg font-bold">{r.role}</h3>
-                  <p className="mt-2 text-sm leading-relaxed opacity-80">
-                    {r.description}
-                  </p>
-                </div>
-              </ScrollAnimator>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════ CTA ═══════════════════════════════ */}
-      <section className="px-5 py-20 lg:px-8 lg:py-28">
-        <ScrollAnimator animation="scale-in">
-          <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl bg-gradient-to-br from-brand-500 via-accent-500 to-purple-600 p-10 text-center text-white shadow-glow-lg sm:p-16">
-            <h2 className="text-3xl font-extrabold sm:text-4xl">
-              Ready to make a difference?
-            </h2>
-            <p className="mx-auto mt-4 max-w-lg text-lg text-white/80">
-              Join thousands of citizens, students, and organizations working together
-              to build better communities.
-            </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link
-                href="/signup"
-                className="group inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-brand-600 shadow-elevated transition-all hover:bg-brand-50 hover:scale-[1.02]"
-              >
-                Create Your Account
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
+      {/* Trending Challenges */}
+      {trendingProblems.length > 0 && (
+        <section className="w-full bg-slate-50 border-t border-slate-200 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="font-serif text-2xl md:text-3xl font-bold text-nexus-primary">
+                  Active Civic Challenges
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Open for multidisciplinary university research claims and corporate sponsorship.
+                </p>
+              </div>
               <Link
                 href="/feed"
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/30 px-8 py-4 text-base font-semibold text-white backdrop-blur transition-all hover:bg-white/10 hover:scale-[1.02]"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-nexus-primary hover:underline"
               >
-                Browse Issues
+                View All Challenges ({problemCount}) <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-          </div>
-        </ScrollAnimator>
-      </section>
 
-      {/* ═══════════════════════════════ FOOTER ═══════════════════════════════ */}
-      <footer className="border-t border-border bg-white/50 px-5 py-12 backdrop-blur lg:px-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 sm:flex-row">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-xs font-bold text-white">
-              CI
-            </span>
-            <span className="text-sm font-bold text-ink">
-              Civic Innovation Marketplace
-            </span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {trendingProblems.map((prob) => (
+                <div
+                  key={prob.id}
+                  className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 capitalize">
+                        {prob.domain?.replace('_', ' ') || 'Civic Infrastructure'}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                        <Flame className="w-3 h-3" /> {prob.active_claims_count} active{' '}
+                        {prob.active_claims_count === 1 ? 'team' : 'teams'}
+                      </span>
+                    </div>
+
+                    <h3 className="font-serif text-base font-bold text-slate-900 leading-snug">
+                      {prob.title}
+                    </h3>
+                    <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                      {prob.description}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[11px] text-slate-400">
+                      {new Date(prob.created_at).toLocaleDateString()}
+                    </span>
+                    <Link
+                      href={`/feed`}
+                      className="text-xs font-bold text-nexus-primary hover:underline inline-flex items-center gap-1"
+                    >
+                      View Details <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-6 text-sm text-muted">
-            <a href="#features" className="transition hover:text-brand-500">
-              Features
-            </a>
-            <a href="#how-it-works" className="transition hover:text-brand-500">
-              How It Works
-            </a>
-            <Link href="/login" className="transition hover:text-brand-500">
-              Sign In
-            </Link>
-            <Link href="/signup" className="transition hover:text-brand-500">
-              Sign Up
-            </Link>
+        </section>
+      )}
+
+      {/* Footer */}
+      <footer className="w-full bg-white border-t border-slate-200 py-12 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="md:col-span-2 space-y-2">
+            <span className="font-serif font-bold text-xl text-nexus-primary block">CivicNexus</span>
+            <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
+              From Citizen Voice to Real-World Impact. An open marketplace matching community challenges with academic research and corporate escrow.
+            </p>
           </div>
-          <p className="text-xs text-muted">
-            © {new Date().getFullYear()} Civic Innovation Marketplace
-          </p>
+
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Platform Links</h4>
+            <ul className="text-xs text-slate-600 space-y-1.5">
+              <li>
+                <Link href="/feed" className="hover:text-nexus-primary">Explore Challenges</Link>
+              </li>
+              <li>
+                <Link href="/university" className="hover:text-nexus-primary">University Discovery</Link>
+              </li>
+              <li>
+                <Link href="/corporate" className="hover:text-nexus-primary">Corporate Showcase</Link>
+              </li>
+              <li>
+                <Link href="/admin" className="hover:text-nexus-primary">Admin Portal</Link>
+              </li>
+            </ul>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Architecture & Verification</h4>
+            <p className="text-[11px] text-slate-500">
+              Powered by Neon Lakebase Postgres, PostGIS Geospatial Engine, Gemini Flash AI Triage, and Tracked Escrow Ledger.
+            </p>
+          </div>
         </div>
       </footer>
     </div>

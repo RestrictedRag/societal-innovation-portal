@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CivicNexus Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#002117",
+                        "primary-fixed": "#b0f0d6",
+                        "error-container": "#ffdad6",
+                        "secondary": "#99462a",
+                        "outline-variant": "#bfc9c3",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#ffb59e",
+                        "secondary-container": "#fe9572",
+                        "on-tertiary-fixed": "#2f1500",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "background": "#f8f9ff",
+                        "surface-dim": "#d0dbed",
+                        "surface-container": "#e6eeff",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#404944",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "on-secondary-fixed-variant": "#7a2f15",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-surface": "#121c2a",
+                        "secondary-fixed": "#ffdbd0",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "on-primary-container": "#80bea6",
+                        "tertiary-container": "#6a3700",
+                        "surface-variant": "#d9e3f6",
+                        "tertiary": "#4a2400",
+                        "on-background": "#121c2a",
+                        "on-tertiary-container": "#ff9939",
+                        "primary-container": "#064e3b",
+                        "inverse-primary": "#95d3ba",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container-low": "#eff4ff",
+                        "primary": "#003527",
+                        "outline": "#707974",
+                        "surface-tint": "#2b6954",
+                        "surface-container-high": "#dee9fc",
+                        "primary-fixed-dim": "#95d3ba",
+                        "on-secondary-container": "#762c12",
+                        "surface-bright": "#f8f9ff",
+                        "surface-container-highest": "#d9e3f6",
+                        "surface": "#f8f9ff",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#ffdcc3",
+                        "inverse-surface": "#27313f",
+                        "on-secondary-fixed": "#390b00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "xs": "4px",
+                        "gutter": "24px",
+                        "base": "8px",
+                        "max-width": "1440px",
+                        "lg": "48px",
+                        "margin-desktop": "64px",
+                        "md": "24px",
+                        "xl": "80px",
+                        "sm": "12px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["\"Source Serif 4\""],
+                        "headline-md": ["\"Source Serif 4\""],
+                        "label-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-lg": ["\"Source Serif 4\""],
+                        "headline-lg-mobile": ["\"Source Serif 4\""],
+                        "body-md": ["Hanken Grotesk"],
+                        "label-sm": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #f8f9ff;
+            background-image: linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(6, 78, 59, 0.05);
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface antialiased min-h-screen relative">
+<!-- TopNavBar (Web Only) -->
+<header class="hidden md:flex fixed top-0 w-full z-50 justify-between items-center px-margin-desktop h-16 bg-surface/60 dark:bg-surface-dim/60 backdrop-blur-md border-b border-white/30 dark:border-outline-variant/20 shadow-sm">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Nexus Civic</span>
+<div class="relative ml-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-[#F3EFE0] border border-[#F3EFE0] focus:border-[#064E3B] rounded-full font-body-md text-on-surface outline-none transition-colors w-64 text-sm" placeholder="Search platform..." type="text"/>
+</div>
+</div>
+<nav class="flex items-center gap-gutter h-full">
+<!-- Simplified nav for Admin -->
+<div class="flex items-center gap-md h-full">
+<span class="material-symbols-outlined cursor-pointer hover:bg-primary-container/10 transition-colors p-2 rounded-full text-primary">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:bg-primary-container/10 transition-colors p-2 rounded-full text-primary">settings</span>
+</div>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-outline-variant/20 cursor-pointer">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A small circular avatar image showing a professional, friendly person in modern lighting with a subtle civic green background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWTImAxZdxtJ2wBwWCX54C4R9S6SWDflHsy6xT0xedlItHi1nRfTbTbnutCwu4jlVPcwLSyLqelWsETAX0gd6iOqn9Zb8MPd_sxx_Eayb_XYEaQPJYVpuoS8nghURgdx5KY5bHRRzjBWcD1UrBmVyAK_gzxMrDKZKzM-eKAd_l6iZlgKCU4QXwesKVsJgdPPkgzbZuYEF9ZOLyyjtszAECNsxIyCKeWRJlUdsUuyZ-RGrMJhwgk1Ch3A"/>
+</div>
+</nav>
+</header>
+<!-- Main Layout -->
+<div class="flex h-screen pt-[64px]">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-[280px] flex flex-col p-md z-40 bg-surface/40 dark:bg-surface-container-low/40 backdrop-blur-lg border-r border-white/30 dark:border-outline-variant/10 shadow-sm hidden md:flex">
+<div class="flex items-center gap-3 mb-xl">
+<div class="w-10 h-10 rounded-lg overflow-hidden border border-outline-variant/20 shadow-sm">
+<img alt="Project Workspace Avatar" class="w-full h-full object-cover" data-alt="A clean, abstract logo graphic representing a network node or intersection, colored in deep forest green and warm ivory." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiL9CuEPHyoKemxfOd2NcmAucec3t1BO9y7apdEvJXd-wp7cFcudToO1AFsYf39k_NYBx0GLhv3jAUElp9aD-0HfS58zi7nWaVo7Y3_91GcfpccZxZ11hQDy_C2WyobokpZnzTNnagmar5aFPH5iOYEtnzm9aYJ1ko1FkRDsFEQQ3mmF15eLg_RlTyPYx97KH5xYXlrGcmfHhDO3ufjNTHmu3jrYfO3MfEMzplRwiyhWrGvzfB92h62Q"/>
+</div>
+<div>
+<h2 class="font-label-md text-label-md font-bold text-primary">Project Nexus</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Innovation Hub</p>
+</div>
+</div>
+<button class="w-full py-3 px-4 bg-primary-container text-white font-label-md text-label-md rounded-lg mb-8 hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span> New Initiative
+            </button>
+<nav class="flex-1 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold font-label-md text-label-md group hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+                    Dashboard
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 rounded-lg font-label-md text-label-md group hover:translate-x-1 transition-transform duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined">emoji_events</span>
+                    Challenges
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 rounded-lg font-label-md text-label-md group hover:translate-x-1 transition-transform duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+                    Projects
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 rounded-lg font-label-md text-label-md group hover:translate-x-1 transition-transform duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined">insights</span>
+                    Impact
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 rounded-lg font-label-md text-label-md group hover:translate-x-1 transition-transform duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+                    Resources
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 rounded-lg font-label-md text-label-md group hover:translate-x-1 transition-transform duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined">hub</span>
+                    Network
+                </a>
+</nav>
+<div class="mt-auto border-t border-outline-variant/20 pt-4 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 rounded-lg font-label-sm text-label-sm group cursor-pointer transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">help</span>
+                    Help
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 rounded-lg font-label-sm text-label-sm group cursor-pointer transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+                    Logout
+                </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-[280px] p-margin-mobile md:p-margin-desktop overflow-y-auto">
+<!-- Page Header -->
+<div class="mb-lg flex justify-between items-end">
+<div>
+<h1 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">Platform Overview</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-2xl">Monitor network health, active civic challenges, and overall platform impact metrics.</p>
+</div>
+<div class="hidden lg:flex gap-3">
+<button class="px-4 py-2 rounded border border-primary text-primary font-label-md text-label-md hover:bg-surface-container transition-colors bg-transparent">Export Report</button>
+<button class="px-4 py-2 rounded bg-primary-container text-white font-label-md text-label-md hover:opacity-90 transition-opacity">System Status</button>
+</div>
+</div>
+<!-- Top Stats Bento Grid -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-gutter mb-lg">
+<!-- Stat 1 -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary-container/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">group</span>
+</div>
+<span class="font-label-sm text-label-sm text-[#064E3B] bg-[#95d3ba]/30 px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> 12%
+                        </span>
+</div>
+<div>
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Total Users</h3>
+<p class="font-headline-md text-headline-md text-primary font-bold">124,592</p>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary-container/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">emoji_events</span>
+</div>
+<span class="font-label-sm text-label-sm text-[#064E3B] bg-[#95d3ba]/30 px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> 5%
+                        </span>
+</div>
+<div>
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Active Challenges</h3>
+<p class="font-headline-md text-headline-md text-primary font-bold">342</p>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary-container/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">school</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_flat</span> 0%
+                        </span>
+</div>
+<div>
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Partner Universities</h3>
+<p class="font-headline-md text-headline-md text-primary font-bold">48</p>
+</div>
+</div>
+<!-- Stat 4 -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between relative overflow-hidden">
+<div class="absolute inset-0 opacity-20 bg-gradient-to-br from-[#064E3B] to-transparent mix-blend-overlay"></div>
+<div class="flex justify-between items-start mb-4 relative z-10">
+<div class="p-2 bg-primary-container text-white rounded-lg">
+<span class="material-symbols-outlined">volunteer_activism</span>
+</div>
+<span class="font-label-sm text-label-sm text-[#064E3B] bg-[#95d3ba]/30 px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> 28%
+                        </span>
+</div>
+<div class="relative z-10">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">People Impacted</h3>
+<p class="font-headline-md text-headline-md text-primary font-bold">1.2M+</p>
+</div>
+</div>
+</div>
+<!-- Main Dashboard Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Center Column: Charts & Activity -->
+<div class="lg:col-span-2 flex flex-col gap-gutter">
+<!-- Ecosystem Health & Metrics -->
+<div class="glass-card rounded-xl p-md">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-[20px] font-semibold text-primary">Ecosystem Health</h3>
+<button class="text-primary hover:bg-surface-container p-1 rounded transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Pending Reviews -->
+<div class="bg-surface-bright rounded-lg p-4 border border-outline-variant/30 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-[32px] text-[#99462a] mb-2">pending_actions</span>
+<h4 class="font-headline-md text-[24px] text-on-surface font-bold">84</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Pending Reviews</p>
+</div>
+<!-- Reported Content -->
+<div class="bg-surface-bright rounded-lg p-4 border border-error-container flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-[32px] text-error mb-2">report</span>
+<h4 class="font-headline-md text-[24px] text-error font-bold">12</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Flagged Items</p>
+</div>
+<!-- Node Connectivity (Abstract Metric) -->
+<div class="bg-surface-bright rounded-lg p-4 border border-outline-variant/30 flex flex-col items-center justify-center text-center relative overflow-hidden">
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at center, #064E3B 1px, transparent 1px); background-size: 10px 10px;"></div>
+<span class="material-symbols-outlined text-[32px] text-primary mb-2 relative z-10">share</span>
+<h4 class="font-headline-md text-[24px] text-primary font-bold relative z-10">92%</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1 relative z-10">Network Density</p>
+</div>
+</div>
+<!-- Minimal Chart Placeholder -->
+<div class="mt-8 border-t border-outline-variant/20 pt-6">
+<h4 class="font-label-md text-label-md text-on-surface mb-4">Engagement Trends (30 Days)</h4>
+<div class="h-48 w-full bg-surface-bright rounded border border-outline-variant/20 flex items-end px-4 gap-2 pb-2 relative">
+<!-- Decorative lines for chart -->
+<div class="absolute top-1/4 left-0 w-full border-t border-dashed border-outline-variant/30"></div>
+<div class="absolute top-2/4 left-0 w-full border-t border-dashed border-outline-variant/30"></div>
+<div class="absolute top-3/4 left-0 w-full border-t border-dashed border-outline-variant/30"></div>
+<!-- Bars -->
+<div class="w-full bg-primary-container/20 rounded-t h-[40%] relative group"><div class="absolute inset-0 bg-primary-container opacity-0 group-hover:opacity-100 transition-opacity rounded-t"></div></div>
+<div class="w-full bg-primary-container/20 rounded-t h-[60%] relative group"><div class="absolute inset-0 bg-primary-container opacity-0 group-hover:opacity-100 transition-opacity rounded-t"></div></div>
+<div class="w-full bg-primary-container/20 rounded-t h-[30%] relative group"><div class="absolute inset-0 bg-primary-container opacity-0 group-hover:opacity-100 transition-opacity rounded-t"></div></div>
+<div class="w-full bg-primary-container/40 rounded-t h-[80%] relative group"><div class="absolute inset-0 bg-primary-container opacity-0 group-hover:opacity-100 transition-opacity rounded-t"></div></div>
+<div class="w-full bg-primary-container/20 rounded-t h-[50%] relative group"><div class="absolute inset-0 bg-primary-container opacity-0 group-hover:opacity-100 transition-opacity rounded-t"></div></div>
+<div class="w-full bg-primary-container/60 rounded-t h-[90%] relative group"><div class="absolute inset-0 bg-primary-container opacity-0 group-hover:opacity-100 transition-opacity rounded-t"></div></div>
+<div class="w-full bg-primary-container rounded-t h-[75%] relative group"><div class="absolute inset-0 bg-primary-container opacity-80 group-hover:opacity-100 transition-opacity rounded-t"></div></div>
+</div>
+</div>
+</div>
+<!-- Complex Data Table (Projects) -->
+<div class="glass-card rounded-xl overflow-hidden flex flex-col">
+<div class="p-md border-b border-outline-variant/20 flex justify-between items-center bg-white/40">
+<h3 class="font-headline-md text-[20px] font-semibold text-primary">Active Civic Projects</h3>
+<button class="text-sm font-label-md text-primary hover:underline">View All</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide border-b border-outline-variant/20 font-semibold">Project Name</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide border-b border-outline-variant/20 font-semibold">Nodes</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide border-b border-outline-variant/20 font-semibold">Status</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide border-b border-outline-variant/20 font-semibold text-right">Actions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="hover:bg-white/50 transition-colors border-b border-outline-variant/10">
+<td class="p-4">
+<p class="font-body-md text-on-surface font-medium">Urban Canopy Expansion</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Metro District 4</p>
+</td>
+<td class="p-4 font-body-sm text-on-surface">14 Orgs, 300+ Vols</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-[#95d3ba]/20 text-[#064E3B] font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-[#064E3B] mr-1.5"></span> Active
+                                            </span>
+</td>
+<td class="p-4 text-right">
+<button class="text-outline hover:text-primary p-1"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+</td>
+</tr>
+<tr class="hover:bg-white/50 transition-colors border-b border-outline-variant/10">
+<td class="p-4">
+<p class="font-body-md text-on-surface font-medium">Digital Literacy Initiative</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Public Libraries</p>
+</td>
+<td class="p-4 font-body-sm text-on-surface">5 Orgs, 50 Vols</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-secondary-container/20 text-[#7a2f15] font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-[#7a2f15] mr-1.5"></span> Review
+                                            </span>
+</td>
+<td class="p-4 text-right">
+<button class="text-outline hover:text-primary p-1"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+</td>
+</tr>
+<tr class="hover:bg-white/50 transition-colors">
+<td class="p-4">
+<p class="font-body-md text-on-surface font-medium">Clean Water Tech Pilot</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">River Basin Coalition</p>
+</td>
+<td class="p-4 font-body-sm text-on-surface">3 Orgs, 12 Techs</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-outline-variant/30 text-on-surface-variant font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-outline mr-1.5"></span> Drafting
+                                            </span>
+</td>
+<td class="p-4 text-right">
+<button class="text-outline hover:text-primary p-1"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Right Column: Activity Feed & Insights -->
+<div class="flex flex-col gap-gutter">
+<!-- Activity Feed -->
+<div class="glass-card rounded-xl p-md flex-1">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-[18px] font-semibold text-primary">Platform Activity</h3>
+<span class="material-symbols-outlined text-outline">sync</span>
+</div>
+<div class="relative before:absolute before:inset-y-0 before:left-[19px] before:w-[2px] before:bg-outline-variant/30 flex flex-col gap-6 ml-2">
+<!-- Activity Item 1 -->
+<div class="relative flex gap-4 items-start z-10">
+<div class="w-10 h-10 rounded-full bg-primary-container text-white flex items-center justify-center shrink-0 border-4 border-[#f8f9ff]">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+</div>
+<div>
+<p class="font-body-md text-on-surface text-sm"><span class="font-semibold">City Hall</span> verified the new <span class="text-primary font-medium cursor-pointer">Transit Proposal</span>.</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">10 mins ago</p>
+</div>
+</div>
+<!-- Activity Item 2 -->
+<div class="relative flex gap-4 items-start z-10">
+<div class="w-10 h-10 rounded-full bg-[#94A3B8] text-white flex items-center justify-center shrink-0 border-4 border-[#f8f9ff]">
+<span class="material-symbols-outlined text-[20px]">group_add</span>
+</div>
+<div>
+<p class="font-body-md text-on-surface text-sm"><span class="font-semibold">State University</span> joined the network.</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">2 hours ago</p>
+</div>
+</div>
+<!-- Activity Item 3 -->
+<div class="relative flex gap-4 items-start z-10">
+<div class="w-10 h-10 rounded-full bg-error-container text-error flex items-center justify-center shrink-0 border-4 border-[#f8f9ff]">
+<span class="material-symbols-outlined text-[20px]">flag</span>
+</div>
+<div>
+<p class="font-body-md text-on-surface text-sm">System flagged <span class="font-semibold">3 accounts</span> for unusual activity.</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">5 hours ago</p>
+<button class="mt-2 text-xs font-label-md text-primary hover:underline border border-primary/30 px-2 py-1 rounded bg-white/50">Review Now</button>
+</div>
+</div>
+<!-- Activity Item 4 -->
+<div class="relative flex gap-4 items-start z-10">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-[#7a2f15] flex items-center justify-center shrink-0 border-4 border-[#f8f9ff]">
+<span class="material-symbols-outlined text-[20px]">campaign</span>
+</div>
+<div>
+<p class="font-body-md text-on-surface text-sm">New challenge <span class="font-semibold cursor-pointer text-primary">"Green Roofs 2025"</span> published.</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">Yesterday</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 text-center text-sm font-label-md text-primary hover:bg-surface-container rounded transition-colors">View Full Log</button>
+</div>
+</div>
+</div>
+<div class="h-16 md:h-8"></div> <!-- Spacer for bottom nav if needed on mobile, just padding here -->
+</main>
+</div>
+</body></html>

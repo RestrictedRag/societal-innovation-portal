@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Report a Societal Challenge - CivicNexus</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error": "#ffffff",
+                        "surface-container": "#e6eeff",
+                        "surface-container-high": "#dee9fc",
+                        "secondary": "#99462a",
+                        "on-secondary-fixed": "#390b00",
+                        "surface-variant": "#d9e3f6",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#6e3900",
+                        "on-surface-variant": "#404944",
+                        "secondary-container": "#fe9572",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#eaf1ff",
+                        "primary-fixed-dim": "#95d3ba",
+                        "on-tertiary-fixed": "#2f1500",
+                        "on-secondary-fixed-variant": "#7a2f15",
+                        "surface": "#f8f9ff",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "on-primary-fixed": "#002117",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb77d",
+                        "inverse-surface": "#27313f",
+                        "on-secondary-container": "#762c12",
+                        "surface-tint": "#2b6954",
+                        "background": "#f8f9ff",
+                        "secondary-fixed": "#ffdbd0",
+                        "outline-variant": "#bfc9c3",
+                        "on-primary-container": "#80bea6",
+                        "tertiary-fixed": "#ffdcc3",
+                        "secondary-fixed-dim": "#ffb59e",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#d9e3f6",
+                        "on-tertiary-container": "#ff9939",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#064e3b",
+                        "primary-fixed": "#b0f0d6",
+                        "on-surface": "#121c2a",
+                        "surface-container-low": "#eff4ff",
+                        "surface-bright": "#f8f9ff",
+                        "surface-dim": "#d0dbed",
+                        "on-background": "#121c2a",
+                        "primary": "#003527",
+                        "outline": "#707974",
+                        "tertiary": "#4a2400",
+                        "tertiary-container": "#6a3700",
+                        "inverse-primary": "#95d3ba",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "gutter": "24px",
+                        "lg": "48px",
+                        "margin-mobile": "16px",
+                        "max-width": "1440px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "xl": "80px",
+                        "base": "8px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "display-lg": ["\"Source Serif 4\""],
+                        "headline-md": ["\"Source Serif 4\""],
+                        "label-sm": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["\"Source Serif 4\""],
+                        "headline-lg": ["\"Source Serif 4\""]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "headline-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Ambient Glassmorphism Shadows and Borders */
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(6, 78, 59, 0.05);
+        }
+        
+        .glass-input {
+            background-color: #F3EFE0; /* Warm Beige as per styling guide */
+        }
+        
+        /* Background Grid Pattern */
+        .bg-nexus-grid {
+            background-image: 
+                linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+        /* Hide scrollbar for clean file list */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md bg-nexus-grid min-h-screen flex flex-col relative overflow-x-hidden">
+<!-- Focused Task Header (Suppressed main nav to prioritize canvas) -->
+<header class="w-full py-md px-margin-desktop flex items-center justify-between border-b border-white/30 bg-surface/60 backdrop-blur-md z-40 sticky top-0 shadow-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-[28px]">hub</span>
+<span class="font-headline-md text-headline-md font-bold text-primary">CivicNexus</span>
+</div>
+<button class="font-label-md text-label-md text-primary flex items-center gap-xs hover:bg-surface-variant/50 px-4 py-2 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[18px]">close</span>
+            Cancel
+        </button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-max-width mx-auto px-margin-desktop py-lg grid grid-cols-1 lg:grid-cols-12 gap-lg relative">
+<!-- Page Titles (Spans full width above columns) -->
+<div class="col-span-1 lg:col-span-12 mb-lg">
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-sm">
+                Report a Societal Challenge
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-3xl">
+                Describe the problem in detail. CivicNexus will analyze the data and connect it to regional network nodes, institutions, and individuals equipped to develop solutions.
+            </p>
+</div>
+<!-- Form Area (Left Column - 8 cols) -->
+<div class="col-span-1 lg:col-span-8 flex flex-col gap-md">
+<form class="flex flex-col gap-md" id="challenge-form">
+<!-- Section 1: Core Identity -->
+<section class="glass-card rounded-xl p-md">
+<div class="flex items-center gap-sm border-b border-outline-variant/30 pb-sm mb-md">
+<span class="material-symbols-outlined text-primary">edit_document</span>
+<h2 class="font-label-md text-label-md text-primary">1. Challenge Details</h2>
+</div>
+<div class="flex flex-col gap-md">
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant mb-xs block" for="title">Challenge Title</label>
+<input class="w-full glass-input border border-outline-variant focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded-lg px-4 py-3 font-body-md text-on-surface outline-none transition-all placeholder:text-outline" id="title" placeholder="e.g., Severe flooding on Main Street during heavy rain" type="text"/>
+</div>
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant mb-xs block" for="description">Detailed Description</label>
+<textarea class="w-full glass-input border border-outline-variant focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded-lg px-4 py-3 font-body-md text-on-surface outline-none transition-all resize-y placeholder:text-outline" id="description" placeholder="Describe what happens, when it happens, and any observable impacts on the community..." rows="4"></textarea>
+</div>
+</div>
+</section>
+<!-- Section 2: Classification (Bento Grid Style) -->
+<section class="glass-card rounded-xl p-md">
+<div class="flex items-center gap-sm border-b border-outline-variant/30 pb-sm mb-md">
+<span class="material-symbols-outlined text-primary">category</span>
+<h2 class="font-label-md text-label-md text-primary">2. Classification</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant mb-xs block">Category</label>
+<div class="relative">
+<select class="w-full appearance-none glass-input border border-outline-variant focus:border-primary-container rounded-lg px-4 py-3 pr-10 font-body-md text-on-surface outline-none transition-all">
+<option disabled="" selected="" value="">Select Primary Category</option>
+<option>Infrastructure &amp; Transport</option>
+<option>Environmental &amp; Climate</option>
+<option>Public Health &amp; Safety</option>
+<option>Housing &amp; Urban Planning</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant mb-xs block">Subcategory</label>
+<div class="relative">
+<select class="w-full appearance-none glass-input border border-outline-variant focus:border-primary-container rounded-lg px-4 py-3 pr-10 font-body-md text-on-surface outline-none transition-all">
+<option disabled="" selected="" value="">Select Subcategory</option>
+<option>Road Maintenance</option>
+<option>Public Transit Access</option>
+<option>Water Management</option>
+<option>Air Quality</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant mb-xs block">Urgency Level</label>
+<div class="relative">
+<select class="w-full appearance-none glass-input border border-outline-variant focus:border-primary-container rounded-lg px-4 py-3 pr-10 font-body-md text-on-surface outline-none transition-all">
+<option>Low - General concern</option>
+<option>Medium - Developing issue</option>
+<option>High - Immediate attention needed</option>
+<option>Critical - Active danger/failure</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant mb-xs block">Frequency</label>
+<div class="relative">
+<select class="w-full appearance-none glass-input border border-outline-variant focus:border-primary-container rounded-lg px-4 py-3 pr-10 font-body-md text-on-surface outline-none transition-all">
+<option>Isolated Incident</option>
+<option>Recurring (Weather dependent)</option>
+<option>Recurring (Time of day)</option>
+<option>Constant / Ongoing</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 3: Location -->
+<section class="glass-card rounded-xl p-md">
+<div class="flex items-center justify-between border-b border-outline-variant/30 pb-sm mb-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">location_on</span>
+<h2 class="font-label-md text-label-md text-primary">3. Location</h2>
+</div>
+<button class="font-label-sm text-label-sm text-primary-container border border-primary-container rounded-full px-3 py-1 flex items-center gap-1 hover:bg-primary-container/10 transition-colors" id="btn-use-location" type="button">
+<span class="material-symbols-outlined text-[16px]">my_location</span>
+                            Use Current Location
+                        </button>
+</div>
+<div class="flex flex-col gap-sm">
+<input class="w-full glass-input border border-outline-variant focus:border-primary-container focus:ring-1 focus:ring-primary-container rounded-lg px-4 py-3 font-body-md text-on-surface outline-none transition-all placeholder:text-outline" placeholder="Enter street address or intersection" type="text"/>
+<!-- Map Placeholder -->
+<div class="w-full h-48 rounded-lg overflow-hidden border border-outline-variant/50 relative bg-surface-container-high" data-location="Seattle" style="">
+<img class="w-full h-full object-cover" data-alt="A clean, modern top-down map interface showing a city grid with sophisticated muted greens and warm beige tones. A single, distinct dark green pin marker with an organic node design highlights a specific intersection. The style is minimalist and civic-focused, lacking unnecessary satellite clutter." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBh6N48YaxjWTFgJ_wkbfp0fMeQEIuhJ_dQ3A5gjcEAfHS-V0kFZpTTDmAmZQO28HEOQI8ZS3BYxLxkII_3_MmO0WGBYOxvHM0EKTDK7jldb6Rwa5L5KfiaC5Y9CgIKkp6S4lwL0UobfmtH71uWBVKvXkWVRvCQsrmwkFTX73fkgS6r8DaqjwcnfaNmC3gfNUXrV7jb6UY6yRjra0MOZ1GmTvgAHmoKTmRgqH9_PZpK-_p0cD68AO2_3g"/>
+</div>
+</div>
+</section>
+<!-- Section 4: Evidence & Media (Critical Feature) -->
+<section class="glass-card rounded-xl p-md">
+<div class="flex items-center gap-sm border-b border-outline-variant/30 pb-sm mb-md">
+<span class="material-symbols-outlined text-primary">photo_camera</span>
+<h2 class="font-label-md text-label-md text-primary">4. Photographic Evidence</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">
+                        Visual evidence significantly increases the priority and clarity of civic reports.
+                    </p>
+<div class="flex flex-wrap gap-sm mb-md">
+<!-- Trigger Camera Modal -->
+<button class="font-label-md text-label-md bg-primary-container text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-primary-container/90 transition-colors shadow-sm" id="btn-open-camera" type="button">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">camera</span>
+                            Take Photo
+                        </button>
+<!-- Trigger File Upload -->
+<div class="relative">
+<input accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" id="file-upload" multiple="" type="file"/>
+<button class="font-label-md text-label-md border border-primary-container text-primary-container px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-surface-variant/50 transition-colors bg-transparent" type="button">
+<span class="material-symbols-outlined">upload_file</span>
+                                Upload Files
+                            </button>
+</div>
+</div>
+<!-- Attachment Panel -->
+<div class="hidden flex-col gap-xs mt-sm border border-outline-variant/40 rounded-lg p-sm bg-surface/50" id="attachment-panel">
+<!-- Populated by JS -->
+</div>
+</section>
+<!-- Submit Action -->
+<div class="mt-sm flex justify-end">
+<button class="font-label-md text-label-md bg-primary-container text-white px-8 py-4 rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity shadow-md" type="button">
+                        Submit Challenge
+                        <span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</form>
+</div>
+<!-- Contextual Sidebar (Right Column - 4 cols) -->
+<div class="hidden lg:flex col-span-4 flex-col gap-md sticky top-[100px] h-fit">
+<!-- Institutional Badge / Information -->
+<div class="glass-card rounded-xl p-md border-l-4 border-l-primary-container">
+<h3 class="font-headline-md text-headline-md text-primary mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined">info</span>
+                    Why Reporting Matters
+                </h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">
+                    Your observations act as vital network nodes. By structuring this data, CivicNexus routes systemic issues directly to verified institutional partners and specialized community task forces.
+                </p>
+<div class="flex flex-col gap-3 mt-4">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Verified Routing</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Reports are algorithmically categorized and sent to relevant authorities.</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[18px]">timeline</span>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Track Progress</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Once submitted, you can monitor the status timeline of your report on your dashboard.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="text-center opacity-50">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-primary">Secure Institutional Platform</span>
+</div>
+</div>
+</main>
+<!-- Camera Modal Overlay (Critical Feature) -->
+<div class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300" id="camera-modal">
+<!-- High Contrast Backdrop Layer -->
+<div class="absolute inset-0 bg-inverse-surface/80 backdrop-blur-sm backdrop-brightness-50" id="camera-backdrop"></div>
+<!-- Modal Container (Glassmorphism) -->
+<div class="relative w-full max-w-2xl bg-surface/90 backdrop-blur-xl border border-white/20 rounded-2xl p-sm md:p-md shadow-2xl flex flex-col gap-4 scale-95 transition-transform duration-300 mx-margin-mobile" id="camera-content">
+<!-- Modal Header -->
+<div class="flex justify-between items-center px-2">
+<h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">camera_alt</span>
+                    Capture Evidence
+                </h3>
+<button class="w-10 h-10 rounded-full bg-surface-variant/50 hover:bg-surface-variant flex items-center justify-center text-on-surface transition-colors" id="btn-close-camera" type="button">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Camera Viewfinder Area -->
+<div class="w-full aspect-video bg-black rounded-xl overflow-hidden relative shadow-inner border border-outline-variant/30 flex items-center justify-center">
+<!-- Simulated Live Feed / Placeholder UI -->
+<div class="absolute inset-0 flex flex-col items-center justify-center text-white/70" id="camera-feed-ui">
+<span class="material-symbols-outlined text-4xl mb-2 animate-pulse">videocam</span>
+<p class="font-body-md text-body-md">Requesting camera permissions...</p>
+</div>
+<!-- Crosshairs Overlay (Nexus style details) -->
+<div class="absolute inset-0 pointer-events-none border-[1px] border-white/20 m-8 rounded-lg">
+<div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-white/60 -mt-1 -ml-1"></div>
+<div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-white/60 -mt-1 -mr-1"></div>
+<div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-white/60 -mb-1 -ml-1"></div>
+<div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-white/60 -mb-1 -mr-1"></div>
+</div>
+<!-- Capture Flash Overlay -->
+<div class="absolute inset-0 bg-white opacity-0 pointer-events-none transition-opacity duration-150" id="capture-flash"></div>
+</div>
+<!-- Controls -->
+<div class="flex items-center justify-between px-4 pb-2">
+<div class="text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">flip_camera_ios</span>
+</div>
+<!-- Primary Capture Button -->
+<button class="w-16 h-16 rounded-full bg-surface border-4 border-outline-variant flex items-center justify-center group hover:border-primary-container transition-colors shadow-md relative" id="btn-capture" type="button">
+<div class="w-12 h-12 rounded-full bg-primary-container group-hover:bg-primary transition-colors"></div>
+</button>
+<div class="w-6 h-6"></div> <!-- Spacer for alignment -->
+</div>
+</div>
+</div>
+<!-- JavaScript for Interactions -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Camera Modal Logic
+            const modal = document.getElementById('camera-modal');
+            const backdrop = document.getElementById('camera-backdrop');
+            const content = document.getElementById('camera-content');
+            const btnOpen = document.getElementById('btn-open-camera');
+            const btnClose = document.getElementById('btn-close-camera');
+            const btnCapture = document.getElementById('btn-capture');
+            const flash = document.getElementById('capture-flash');
+            const feedUI = document.getElementById('camera-feed-ui');
+            const panel = document.getElementById('attachment-panel');
+            
+            let mockFileCount = 0;
+
+            const openModal = () => {
+                modal.classList.remove('hidden');
+                // Trigger reflow for transition
+                void modal.offsetWidth; 
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                
+                // Simulate permission granted after 1s
+                setTimeout(() => {
+                    feedUI.innerHTML = `
+                        <div class="absolute inset-0 bg-surface-tint/20"></div>
+                        <img src="placeholder" data-alt="A blurry, real-time looking photograph from a mobile phone camera showing a cracked sidewalk with standing water reflecting overcast light. The color temperature is slightly cool, conveying an active urban issue." class="w-full h-full object-cover opacity-80 mix-blend-luminosity">
+                        <div class="absolute bottom-4 left-4 bg-black/50 px-2 py-1 rounded text-white text-xs backdrop-blur-sm">LIVE</div>
+                    `;
+                }, 800);
+            };
+
+            const closeModal = () => {
+                modal.classList.add('opacity-0');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    // Reset feed UI
+                    feedUI.innerHTML = `
+                        <span class="material-symbols-outlined text-4xl mb-2 animate-pulse">videocam</span>
+                        <p class="font-body-md text-body-md">Requesting camera permissions...</p>
+                    `;
+                }, 300); // matches transition duration
+            };
+
+            btnOpen.addEventListener('click', openModal);
+            btnClose.addEventListener('click', closeModal);
+            backdrop.addEventListener('click', closeModal);
+
+            // Capture Action
+            btnCapture.addEventListener('click', () => {
+                // Flash effect
+                flash.classList.remove('opacity-0');
+                flash.classList.add('opacity-100');
+                setTimeout(() => {
+                    flash.classList.remove('opacity-100');
+                    flash.classList.add('opacity-0');
+                    
+                    // Add mock attachment
+                    addAttachment(`IMG_evidence_${++mockFileCount}.jpg`, '3.2 MB', 'image');
+                    closeModal();
+                }, 150);
+            });
+
+            // File Upload Logic
+            const fileInput = document.getElementById('file-upload');
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    Array.from(e.target.files).forEach(file => {
+                        const size = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+                        addAttachment(file.name, size, 'file');
+                    });
+                }
+            });
+
+            function addAttachment(name, size, type) {
+                panel.classList.remove('hidden');
+                panel.classList.add('flex');
+                
+                const icon = type === 'image' ? 'image' : 'draft';
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between bg-white/60 border border-outline-variant/30 rounded p-2 text-sm';
+                item.innerHTML = `
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <span class="material-symbols-outlined text-primary-container text-[20px] shrink-0">${icon}</span>
+                        <div class="truncate">
+                            <span class="font-label-md text-label-md text-on-surface block truncate">${name}</span>
+                            <span class="font-label-sm text-label-sm text-outline block">${size}</span>
+                        </div>
+                    </div>
+                    <button type="button" class="text-outline hover:text-error transition-colors p-1 rounded hover:bg-error-container shrink-0" onclick="this.parentElement.remove(); if(document.getElementById('attachment-panel').children.length === 0) document.getElementById('attachment-panel').classList.add('hidden');">
+                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                `;
+                panel.appendChild(item);
+            }
+
+            // Location Button Logic (Mock interaction)
+            const btnLocation = document.getElementById('btn-use-location');
+            btnLocation.addEventListener('click', function() {
+                const icon = this.querySelector('span');
+                const originalText = this.innerHTML;
+                
+                this.innerHTML = `<span class="material-symbols-outlined text-[16px] animate-spin">refresh</span> Locating...`;
+                
+                setTimeout(() => {
+                    this.innerHTML = `<span class="material-symbols-outlined text-[16px]">check_circle</span> Located`;
+                    this.classList.add('bg-primary-container/10');
+                    document.querySelector('input[placeholder="Enter street address or intersection"]').value = "400 Broad St, Seattle, WA 98109";
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.classList.remove('bg-primary-container/10');
+                    }, 3000);
+                }, 1500);
+            });
+        });
+    </script>
+</body></html>

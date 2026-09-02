@@ -237,45 +237,25 @@ export function useComplaintForm({ onClose, onOptimisticSubmit, onSuccess, onFai
 
     try {
       const compressedFile = await compressImageFile(file);
-      const presignedResponse = await fetch('/api/upload/presigned', {
+      const formData = new FormData();
+      formData.append('file', compressedFile);
+
+      const uploadResponse = await fetch('/api/upload', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fileName: compressedFile.name || 'complaint-photo.jpg',
-          contentType: compressedFile.type || 'image/jpeg',
-        }),
+        body: formData,
       });
 
-      const presignedPayload = (await presignedResponse.json().catch(() => null)) as {
+      const uploadPayload = (await uploadResponse.json().catch(() => null)) as {
         url?: string;
         publicUrl?: string;
         error?: string;
-      };
+      } | null;
 
-      if (!presignedResponse.ok || !presignedPayload?.url) {
-        throw new Error(presignedPayload?.error ?? 'Cloud storage is not configured. Please add the R2 upload credentials before attaching photos.');
+      if (!uploadResponse.ok || (!uploadPayload?.url && !uploadPayload?.publicUrl)) {
+        throw new Error(uploadPayload?.error ?? 'The selected photo could not be uploaded.');
       }
 
-      let uploadResponse: Response;
-      try {
-        uploadResponse = await fetch(presignedPayload.url, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': compressedFile.type || 'image/jpeg',
-          },
-          body: compressedFile,
-        });
-      } catch {
-        throw new Error('Network error while uploading the selected photo. Check your connection or storage configuration.');
-      }
-
-      if (!uploadResponse.ok) {
-        throw new Error('The selected photo could not be uploaded.');
-      }
-
-      const finalImageUrl = presignedPayload.publicUrl || presignedPayload.url.split('?')[0];
+      const finalImageUrl = uploadPayload.publicUrl || uploadPayload.url!;
       setAttachedMedia((previous) =>
         previous.map((item) =>
           item.previewUrl === previewUrl

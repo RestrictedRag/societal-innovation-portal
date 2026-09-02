@@ -1,5 +1,5 @@
 import { embed } from 'ai';
-import { google } from '@ai-sdk/google';
+import { getEmbeddingModel } from '@/lib/ai/models';
 
 export const EMBEDDING_MODEL_VERSION = 'bge-m3-v1';
 export const EMBEDDING_DIMENSIONS = 1024;
@@ -76,7 +76,7 @@ export async function generateProblemEmbedding(text: string): Promise<number[]> 
   if (hasApiKey && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
     try {
       const result = await embed({
-        model: google.embedding('gemini-embedding-001'),
+        model: getEmbeddingModel(),
         value: sanitized,
       });
 

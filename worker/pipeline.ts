@@ -1,6 +1,6 @@
 import { eq, sql } from 'drizzle-orm';
 import { generateObject } from 'ai';
-import { google } from '@ai-sdk/google';
+import { getSpamScoringModel, getTriageModel } from '@/lib/ai/models';
 
 import { db } from '@/db';
 import {
@@ -46,7 +46,7 @@ async function scoreSpam(title: string, description: string): Promise<SpamScorin
   if (hasApiKey && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
     try {
       const { object } = await generateObject({
-        model: google('gemini-1.5-flash'),
+        model: getSpamScoringModel(),
         schema: spamScoringSchema,
         system: `You score citizen-submitted civic problem reports for spam or low-effort content.
 Score close to 0 = clearly genuine, specific, actionable problem report.
@@ -87,7 +87,7 @@ async function triageProblem(title: string, description: string, currentDomain?:
   if (hasApiKey && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
     try {
       const { object } = await generateObject({
-        model: google('gemini-3.6-flash'),
+        model: getTriageModel(),
         schema: problemTriageSchema,
         system: `You classify citizen civic complaints into one of the canonical domains:
 healthcare, agriculture, education, disaster_management, clean_energy, water_management,

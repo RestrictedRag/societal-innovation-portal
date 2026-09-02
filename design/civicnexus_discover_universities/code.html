@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CivicNexus - University Discovery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "on-primary-fixed": "#002117",
+                            "primary-fixed": "#b0f0d6",
+                            "error-container": "#ffdad6",
+                            "secondary": "#99462a",
+                            "outline-variant": "#bfc9c3",
+                            "on-error-container": "#93000a",
+                            "error": "#ba1a1a",
+                            "secondary-fixed-dim": "#ffb59e",
+                            "secondary-container": "#fe9572",
+                            "on-tertiary-fixed": "#2f1500",
+                            "tertiary-fixed-dim": "#ffb77d",
+                            "background": "#f8f9ff",
+                            "surface-dim": "#d0dbed",
+                            "surface-container": "#e6eeff",
+                            "on-secondary": "#ffffff",
+                            "on-primary": "#ffffff",
+                            "on-surface-variant": "#404944",
+                            "on-primary-fixed-variant": "#0b513d",
+                            "on-secondary-fixed-variant": "#7a2f15",
+                            "on-tertiary": "#ffffff",
+                            "on-error": "#ffffff",
+                            "on-surface": "#121c2a",
+                            "secondary-fixed": "#ffdbd0",
+                            "on-tertiary-fixed-variant": "#6e3900",
+                            "on-primary-container": "#80bea6",
+                            "tertiary-container": "#6a3700",
+                            "surface-variant": "#d9e3f6",
+                            "tertiary": "#4a2400",
+                            "on-background": "#121c2a",
+                            "on-tertiary-container": "#ff9939",
+                            "primary-container": "#064e3b",
+                            "inverse-primary": "#95d3ba",
+                            "inverse-on-surface": "#eaf1ff",
+                            "surface-container-low": "#eff4ff",
+                            "primary": "#003527",
+                            "outline": "#707974",
+                            "surface-tint": "#2b6954",
+                            "surface-container-high": "#dee9fc",
+                            "primary-fixed-dim": "#95d3ba",
+                            "on-secondary-container": "#762c12",
+                            "surface-bright": "#f8f9ff",
+                            "surface-container-highest": "#d9e3f6",
+                            "surface": "#f8f9ff",
+                            "surface-container-lowest": "#ffffff",
+                            "tertiary-fixed": "#ffdcc3",
+                            "inverse-surface": "#27313f",
+                            "on-secondary-fixed": "#390b00"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                    },
+                    "spacing": {
+                            "margin-mobile": "16px",
+                            "xs": "4px",
+                            "gutter": "24px",
+                            "base": "8px",
+                            "max-width": "1440px",
+                            "lg": "48px",
+                            "margin-desktop": "64px",
+                            "md": "24px",
+                            "xl": "80px",
+                            "sm": "12px"
+                    },
+                    "fontFamily": {
+                            "display-lg": [
+                                    "\"Source Serif 4\""
+                            ],
+                            "headline-md": [
+                                    "\"Source Serif 4\""
+                            ],
+                            "label-md": [
+                                    "Hanken Grotesk"
+                            ],
+                            "body-lg": [
+                                    "Hanken Grotesk"
+                            ],
+                            "headline-lg": [
+                                    "\"Source Serif 4\""
+                            ],
+                            "headline-lg-mobile": [
+                                    "\"Source Serif 4\""
+                            ],
+                            "body-md": [
+                                    "Hanken Grotesk"
+                            ],
+                            "label-sm": [
+                                    "Hanken Grotesk"
+                            ]
+                    },
+                    "fontSize": {
+                            "display-lg": [
+                                    "56px",
+                                    {
+                                            "lineHeight": "64px",
+                                            "letterSpacing": "-0.02em",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "headline-md": [
+                                    "24px",
+                                    {
+                                            "lineHeight": "32px",
+                                            "fontWeight": "500"
+                                    }
+                            ],
+                            "label-md": [
+                                    "14px",
+                                    {
+                                            "lineHeight": "20px",
+                                            "letterSpacing": "0.02em",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "body-lg": [
+                                    "18px",
+                                    {
+                                            "lineHeight": "28px",
+                                            "fontWeight": "400"
+                                    }
+                            ],
+                            "headline-lg": [
+                                    "40px",
+                                    {
+                                            "lineHeight": "48px",
+                                            "letterSpacing": "-0.01em",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "headline-lg-mobile": [
+                                    "32px",
+                                    {
+                                            "lineHeight": "40px",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "body-md": [
+                                    "16px",
+                                    {
+                                            "lineHeight": "24px",
+                                            "fontWeight": "400"
+                                    }
+                            ],
+                            "label-sm": [
+                                    "12px",
+                                    {
+                                            "lineHeight": "16px",
+                                            "letterSpacing": "0.04em",
+                                            "fontWeight": "500"
+                                    }
+                            ]
+                    }
+            },
+                },
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(6, 78, 59, 0.05);
+        }
+
+        .nexus-grid-bg {
+            background-image: 
+                linear-gradient(to right, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+        .nexus-node-line {
+            position: relative;
+        }
+        .nexus-node-line::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: theme('colors.primary');
+            border: 2px solid white;
+            box-shadow: 0 0 0 1px theme('colors.primary');
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen relative font-body-md text-body-md overflow-x-hidden nexus-grid-bg">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-desktop h-16 bg-surface/60 dark:bg-surface-dim/60 backdrop-blur-md shadow-sm border-b border-white/30 dark:border-outline-variant/20 transition-colors">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Nexus Civic</span>
+</div>
+<div class="hidden md:flex flex-1 max-w-md mx-8">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-[#F3EFE0] border border-white/30 rounded-full font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Search resources, projects..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-primary-container/10 rounded-full transition-colors cursor-pointer active:opacity-80 group relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-primary-container/10 rounded-full transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-white/50 shadow-sm ml-2">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A small, professional headshot of an individual, softly lit, representing a user profile picture in a modern civic application. Neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCN_aDDYMg_M5tU2X_tzww6S82oI6IqbE0Clr8sr8Rrb2aTrKXNGHwBsIdxQpVdymrpGE2WTD5GDoi9rwfEmWA7ZgRXHGuj-r-NSMsrE-eAtUnLqSOr_K9u2Q0rAJiEmvbRilQ4zKVnr9NKqd3ogCAa64-Sxz9nZJnxzLuuSsKZLCtX6GiV6eiTstvnfLf_C-qmgQJQ7H26HtS1OmUDBuFts91pn3Wr1xMR5AD4swCxEpm0cqUN1l2iCA"/>
+</div>
+</div>
+</nav>
+<!-- SideNavBar & Main Content Wrapper -->
+<div class="flex pt-16 h-screen">
+<!-- SideNavBar -->
+<aside class="hidden md:flex fixed left-0 top-16 h-[calc(100vh-64px)] w-[280px] flex-col p-md z-40 bg-surface/40 dark:bg-surface-container-low/40 backdrop-blur-lg border-r border-white/30 dark:border-outline-variant/10 shadow-sm">
+<div class="mb-8 px-4 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-white/50">
+<img alt="Project Workspace Avatar" class="w-full h-full object-cover" data-alt="A crisp, abstract geometric logo representing a network or hub, rendered in deep greens and muted sage tones on a light background, suitable for a project workspace avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhFZLiafK_z8s_hV2qX26piRST82n0Z_pFA4X5gEWvT-oP7_WGF-h3TptwhGZ4CTY_Azi_lfLiYuebGxq52IirQDamhipn64s6AqyYoPAqU0cJ3bJNph0o8gzl0H406PsgoMxe0H3CWdNWYXTHT3dkJVZ_KQLqFuGCQlPkQijkaeTtZ5Ij0wr2hjuv816-wo2zhRluyXGHP3n4l2OMzHJSbxtrd62rHa00DZgmQBAdZq8zGTKr5ZnGHg"/>
+</div>
+<div>
+<h2 class="font-label-md text-label-md text-primary font-bold">Project Nexus</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Innovation Hub</p>
+</div>
+</div>
+<button class="mb-8 mx-4 bg-[#064E3B] text-white py-2.5 px-4 rounded-lg font-label-md text-label-md hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Initiative
+            </button>
+<nav class="flex-1 flex flex-col gap-1 overflow-y-auto">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer group" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer group" href="#">
+<span class="material-symbols-outlined" data-icon="emoji_events">emoji_events</span>
+<span>Challenges</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer group" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+<span>Projects</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer group" href="#">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+<span>Impact</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md bg-primary-container text-on-primary-container font-bold shadow-sm cursor-pointer group" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span>Resources</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer group" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+<span>Network</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 border-t border-outline-variant/20 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer group" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help">help</span>
+<span>Help</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high/50 hover:translate-x-1 transition-transform duration-200 cursor-pointer group" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-[280px] p-margin-mobile md:p-margin-desktop overflow-y-auto">
+<header class="mb-lg max-w-[1000px] mx-auto">
+<h1 class="font-display-lg text-display-lg text-primary mb-4">Discover Universities</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Connect with leading academic institutions driving civic innovation. Explore their active research domains, ongoing projects, and measurable impact on the community.</p>
+</header>
+<div class="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Filters Sidebar (Bento Style) -->
+<div class="lg:col-span-3 space-y-6">
+<div class="glass-panel p-6 rounded-xl">
+<h3 class="font-headline-md text-headline-md text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">filter_list</span> Filters
+                        </h3>
+<div class="space-y-6">
+<div>
+<h4 class="font-label-md text-label-md text-on-surface font-semibold mb-3">Research Domain</h4>
+<div class="space-y-2">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="rounded border-outline-variant text-primary focus:ring-primary bg-[#F3EFE0] w-4 h-4 transition-colors" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface-variant group-hover:text-on-surface transition-colors">Urban Mobility (42)</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="rounded border-outline-variant text-primary focus:ring-primary bg-[#F3EFE0] w-4 h-4 transition-colors" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface font-medium group-hover:text-on-surface transition-colors">Public Health (28)</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="rounded border-outline-variant text-primary focus:ring-primary bg-[#F3EFE0] w-4 h-4 transition-colors" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface-variant group-hover:text-on-surface transition-colors">Sustainable Tech (15)</span>
+</label>
+<button class="text-sm text-primary font-medium mt-2 hover:underline">Show more...</button>
+</div>
+</div>
+<hr class="border-outline-variant/30"/>
+<div>
+<h4 class="font-label-md text-label-md text-on-surface font-semibold mb-3">Impact Scale</h4>
+<div class="space-y-2">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="rounded border-outline-variant text-primary focus:ring-primary bg-[#F3EFE0] w-4 h-4 transition-colors" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface-variant group-hover:text-on-surface transition-colors">Local / Municipal</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="rounded border-outline-variant text-primary focus:ring-primary bg-[#F3EFE0] w-4 h-4 transition-colors" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface-variant group-hover:text-on-surface transition-colors">Regional</span>
+</label>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Results Area -->
+<div class="lg:col-span-9 space-y-gutter">
+<!-- Search & Sort -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 glass-panel p-4 rounded-xl">
+<div class="relative w-full max-w-sm">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-[#F3EFE0] border border-white/30 rounded-lg font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Search institutions..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface-variant">Sort by:</span>
+<select class="bg-transparent border-none font-label-md text-label-md text-primary font-semibold focus:ring-0 cursor-pointer pl-0 pr-8">
+<option>Highest Impact</option>
+<option>Most Projects</option>
+<option>A-Z</option>
+</select>
+</div>
+</div>
+<!-- Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Card 1 (Featured) -->
+<div class="glass-panel rounded-xl overflow-hidden group hover:-translate-y-1 transition-transform duration-300 flex flex-col h-full relative">
+<div class="absolute top-4 right-4 z-10 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm text-label-sm font-bold shadow-sm backdrop-blur-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">star</span> Featured Partner
+                            </div>
+<div class="h-40 relative bg-surface-variant">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A sweeping aerial photograph of a prestigious university campus, blending historic stone architecture with modern glass research facilities. Lush green quadrangles and mature trees are visible. Shot in bright, natural daylight with a warm, inviting tone. Professional, high-quality architectural photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0IMkbKtxaXVOPH4KdwYrukIpYxShe_bvAQeOdoYwCHJnDzKwbmjngXChZrRjzg2R3da07qcn8wQA6FJatPbrTrWnFlI1y2wF2VdPZcfJME54Ny0uq2ig4WG0reX0OHYsnVXFKww_Lnn569Ki_UX7N6qs7SKTCdes75GNRMB2p3STn7lwOQouL4O4OQRsvC9OI1QnmEXunV4XcPsdmsFFB5hpQ_woSEYceUj23xukduCvGhaz9bHgHbQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4 flex items-end gap-4">
+<div class="w-16 h-16 rounded-lg border-2 border-white bg-white overflow-hidden shadow-md shrink-0">
+<img class="w-full h-full object-contain p-1" data-alt="A clean, minimalist university logo or crest featuring a stylized shield design in deep green and gold on a pure white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAulk69U_ZQyjv3IcJ5ozWoZgf0W0ybvRq54XxT8MwCn9lhl4gMq4I-YIn-JTmcNx5wiVCbL-tgFE3Bd_6B0OxExsBWQ-CXOt6P1VV-22Qkerf4RxQBfdmk2on2HaYR9Fd9nlCeKXVbTagkOkM7droxmCWSGAX-vZHx03AI6mcnisKrTgOULQsvx3-fbiO0P0dhyDUQ-ovF1BW9rwKKK3hIkfyRR9BNXD16-X7MjFFn-bEE0D7MWv4ywg"/>
+</div>
+<div class="pb-1">
+<h2 class="font-headline-md text-headline-md text-white font-bold leading-tight">Metropolitan Institute of Technology</h2>
+<p class="font-label-sm text-label-sm text-white/90 flex items-center gap-1 mt-1"><span class="material-symbols-outlined text-[14px]">location_on</span> Boston, MA</p>
+</div>
+</div>
+</div>
+<div class="p-6 flex-1 flex flex-col">
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="bg-surface-container-high text-on-surface px-2.5 py-1 rounded-full font-label-sm text-label-sm">Urban Mobility</span>
+<span class="bg-surface-container-high text-on-surface px-2.5 py-1 rounded-full font-label-sm text-label-sm">Data Science</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-6">Leading research in smart city infrastructure and sustainable urban transport solutions through the Nexus network.</p>
+<div class="mt-auto grid grid-cols-2 gap-4 border-t border-outline-variant/20 pt-4">
+<div>
+<p class="font-label-sm text-label-sm text-outline mb-1">Active Projects</p>
+<p class="font-headline-md text-headline-md text-primary font-semibold flex items-center gap-2">
+                                            24 <span class="material-symbols-outlined text-secondary text-[20px]" data-weight="fill">trending_up</span>
+</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-outline mb-1">People Impacted</p>
+<p class="font-headline-md text-headline-md text-primary font-semibold">12.5k</p>
+</div>
+</div>
+</div>
+<div class="px-6 pb-6 pt-0">
+<button class="w-full bg-transparent border border-primary text-primary hover:bg-surface-container-low py-2 rounded-lg font-label-md text-label-md transition-colors">View Profile</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-panel rounded-xl overflow-hidden group hover:-translate-y-1 transition-transform duration-300 flex flex-col h-full">
+<div class="h-32 relative bg-surface-variant">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A modern, sustainable university research building featuring extensive glass facades, living green walls, and solar panels. Shot from ground level looking slightly up, emphasizing innovation and environmental integration. Soft, natural lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_CvBeIZ0JGCYXERxD8TVLnDjF0LLBDoIjBDqefryQ_Bt4k_WOibQJqDS8UfAaejY_Eyq9RW4WjWcKlkRgpc-O1UEI0qhCtFJyAHsJ7YVHp7zYL-4tCz4LBLACQdPBKpJF6X1Bk6zKcpnWgTvFglasUYUNzU2rQikQTLdsySo6ygcY2hDkdKHrewmhxt5C7KZFmrltC-v9cfl65W_e0uYvbketW7BgeNIR5nWw2p2tojO1TFwu0QQMoQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-4 left-4 flex items-end gap-3">
+<div class="w-12 h-12 rounded-lg border-2 border-white bg-white overflow-hidden shadow-sm shrink-0">
+<img class="w-full h-full object-contain p-1" data-alt="A modern university monogram logo, simple and elegant, using deep blue and silver colors on a white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7hNhn1Pux753-GEDeUHCnJ6DjbuQNxv8Mv8oocGfYI0L1ktN15uirJckb7UoZyCWqZjQZl5tJ9FU858_80qE6ZKhvvQW4thGT4_tfMIG_5W5aK8zEyrnXzu1I2VKApRARcO5S7O4YgJ2TKaWg9HibZwYiC5gbUo08zpaqpaoVgNPA9X_k7KLX6dTeXlWzoB6dYHWq9ZHWMeIgKOmAlc7pWFVDIZbD-hTYii77XlmEbxhRAhvR5M-ikw"/>
+</div>
+<div class="pb-1">
+<h2 class="font-headline-md text-[18px] leading-tight text-white font-bold">Cascadia State University</h2>
+</div>
+</div>
+</div>
+<div class="p-6 flex-1 flex flex-col">
+<p class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 mb-3"><span class="material-symbols-outlined text-[14px]">location_on</span> Seattle, WA</p>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="bg-surface-container-high text-on-surface px-2.5 py-1 rounded-full font-label-sm text-label-sm">Public Health</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-6">Pioneering community-based health interventions and epidemiological modeling for regional municipalities.</p>
+<div class="mt-auto grid grid-cols-2 gap-4 border-t border-outline-variant/20 pt-4">
+<div>
+<p class="font-label-sm text-label-sm text-outline mb-1">Active Projects</p>
+<p class="font-headline-md text-headline-md text-primary font-semibold">18</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-outline mb-1">People Impacted</p>
+<p class="font-headline-md text-headline-md text-primary font-semibold">8.2k</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="glass-panel rounded-xl overflow-hidden group hover:-translate-y-1 transition-transform duration-300 flex flex-col h-full">
+<div class="h-32 relative bg-surface-variant">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Interior shot of a high-tech university laboratory or maker space. Students or researchers are visible in the background, out of focus. Foreground features modern equipment. Bright, clinical yet inviting lighting indicating advanced research." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDe-OSjenDE-yPOTomAM952ngV6hr2YJVU-KnhUzLGpRPHgb0QlH4dyjFpn-DPrUPCpKKcaZewNOtDAYEOzsSxsM0lre_vEw9LzMyT7opU2AiQqXwBvPFM11UMrrKEXnIfNKxXkxLXvOhS9QMI13lRP6ODteLHW2fqgUe8AbRDXVsi4bh6BlVeBp6G2ptsoabFD5o1K5pycgxKt56TPL-ZaPkCdLqK_V5a15TJydT6AFVkOUYPxlaAAQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-4 left-4 flex items-end gap-3">
+<div class="w-12 h-12 rounded-lg border-2 border-white bg-white overflow-hidden shadow-sm shrink-0">
+<img class="w-full h-full object-contain p-1" data-alt="A traditional, distinguished university seal logo with Latin script, rendered in dark red and gold on a white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcMb32KlTGPD6l0yJEqoG4RG7KwLsnZoSA-5joQWmJTj6bicb9qxqFwMRu7N8j2GsiVcjw2b_zItacRehkEr98qyeYEyq4zjRNiAdXJ0NfodnYLCwtdsI97E3NCP5JUPH_zNILhH-jnqegLamYgWj14MDXe_OeMwCTMsLUnYaWu_Sdorg9P1SqKR7UO1QhYA88CyJvnPGgxVAImURhSiw7KXSo7G1-gCMN7LBtP-nXtBukYjS_yhhQaA"/>
+</div>
+<div class="pb-1">
+<h2 class="font-headline-md text-[18px] leading-tight text-white font-bold">Midwest Civic College</h2>
+</div>
+</div>
+</div>
+<div class="p-6 flex-1 flex flex-col">
+<p class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 mb-3"><span class="material-symbols-outlined text-[14px]">location_on</span> Chicago, IL</p>
+<div class="flex flex-wrap gap-2 mb-4">
+<span class="bg-surface-container-high text-on-surface px-2.5 py-1 rounded-full font-label-sm text-label-sm">Civic Policy</span>
+<span class="bg-surface-container-high text-on-surface px-2.5 py-1 rounded-full font-label-sm text-label-sm">Education</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-6">Focusing on educational equity and local governance structural reforms through deep community engagement.</p>
+<div class="mt-auto grid grid-cols-2 gap-4 border-t border-outline-variant/20 pt-4">
+<div>
+<p class="font-label-sm text-label-sm text-outline mb-1">Active Projects</p>
+<p class="font-headline-md text-headline-md text-primary font-semibold">12</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-outline mb-1">People Impacted</p>
+<p class="font-headline-md text-headline-md text-primary font-semibold">4.5k</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Load More -->
+<div class="flex justify-center pt-8 pb-12">
+<button class="bg-transparent text-primary font-label-md text-label-md hover:bg-surface-container-low px-6 py-3 rounded-full transition-colors flex items-center gap-2">
+                            Load More Institutions <span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

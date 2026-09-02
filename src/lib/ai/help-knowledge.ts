@@ -12,25 +12,42 @@ export const APP_HELP_ARTICLES: HelpArticle[] = [
     title: 'How Citizen Problem Submission Works',
     category: 'submission',
     keywords: ['report', 'submit', 'problem', 'words', 'description', 'location', 'image', 'photo', 'pin'],
-    content: `To submit a civic problem on Civic Innovation Marketplace:
-1. Provide a clear title and a detailed description of at least 30 words explaining what the issue is and where it is occurring.
-2. Select an academic/civic domain (e.g. Healthcare, Water Management, Urban Infrastructure, Clean Energy, etc.).
-3. Tag your exact GPS location or use your current browser location.
-4. Optionally attach photos (compressed and uploaded securely).
-Once submitted, your problem is queued for automated AI quality checks before becoming visible to nearby universities.`,
+    content: `### Submission Requirements
+Before submitting your civic challenge, ensure you meet the 4 core criteria:
+
+- [x] **Title & Detailed Description**: Must provide a clear title and at least **30 words** detailing what happens, who is impacted, and the community urgency.
+- [x] **Civic Domain**: Select the most relevant category (Urban Infrastructure, Water Management, Clean Energy, Healthcare, etc.).
+- [x] **Precise Geolocation**: Use current GPS or pin the exact street address / coordinates on the PostGIS map.
+- [x] **Photographic Evidence**: (Recommended) Attach photos or live camera captures to accelerate AI quality validation.
+
+### What Happens After You Submit
+Once submitted, your report undergoes automated AI triage (Gemini Flash spam check and BGE-M3 semantic deduplication) resulting in one of four states:
+
+| Outcome State | Description | Next Step |
+| :--- | :--- | :--- |
+| **OPEN** | Passed quality checks (<0.40 spam score, unique). | Visible immediately on regional feed for universities to claim. |
+| **NEEDS_REVIEW** | Borderline quality or ambiguous context (0.40–0.85 spam score). | Sent to Admin Moderation Queue for human review. |
+| **MERGED** | >92% semantic duplicate of an existing nearby issue. | Auto-merged into parent report and recorded as an upvote. |
+| **REJECTED** | Incoherent or promotional spam (>0.85 spam score). | Rejected with notification to citizen. |`,
   },
   {
     id: 'ai-moderation-lifecycle',
     title: 'Problem Statuses and AI Processing Lifecycle',
     category: 'moderation',
     keywords: ['status', 'pending', 'open', 'rejected', 'needs review', 'merged', 'duplicate', 'spam'],
-    content: `When a problem is submitted, it goes through an automated processing pipeline:
-- PENDING_MODERATION: The problem is in the processing queue.
-- OPEN: The problem passed the spam gate and deduplication check and is now live on the public feed for universities to claim.
-- NEEDS_REVIEW: The AI detected ambiguous or low-effort details (spam score 0.40–0.85); an administrator will manually review and approve it.
-- REJECTED: The report was flagged as spam, promotional, or too incoherent (spam score > 0.85).
-- MERGED: A near-duplicate problem with >92% semantic similarity was already reported nearby. Your submission was automatically merged into the original report and recorded as an upvote.
-- CLAIMED: A university research or student team has claimed this problem to work on a solution.`,
+    content: `### AI Pipeline Overview
+Every submission is analyzed by the background worker:
+
+1. **AI Classification & Spam Score**: Gemini Flash analyzes description text and flags spam scores between 0.00 and 1.00.
+2. **Semantic Deduplication**: BGE-M3 1024-dimension embeddings calculate cosine similarity against nearby problems within 25km.
+3. **Regional Routing**: PostGIS coordinates map the challenge to accredited universities within their service radius.
+
+### Status Definitions
+- \`OPEN\`: Available for university research teams to claim.
+- \`NEEDS_REVIEW\`: Under administrative moderation review.
+- \`MERGED\`: Combined with an earlier duplicate submission.
+- \`REJECTED\`: Flagged as spam or violating submission guidelines.
+- \`IN_PROGRESS\`: One or more universities have actively claimed this challenge.`,
   },
   {
     id: 'university-discovery-claim',

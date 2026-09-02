@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CivicNexus - Innovation Impact Dashboard</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600&amp;family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-surface": "#27313f",
+                    "secondary-container": "#fe9572",
+                    "surface-variant": "#d9e3f6",
+                    "on-primary-container": "#80bea6",
+                    "surface-container-low": "#eff4ff",
+                    "primary-fixed": "#b0f0d6",
+                    "on-tertiary-fixed": "#2f1500",
+                    "on-tertiary-container": "#ff9939",
+                    "background": "#f8f9ff",
+                    "on-secondary-fixed": "#390b00",
+                    "on-error-container": "#93000a",
+                    "primary": "#003527",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#404944",
+                    "on-primary-fixed": "#002117",
+                    "inverse-primary": "#95d3ba",
+                    "primary-fixed-dim": "#95d3ba",
+                    "tertiary-fixed-dim": "#ffb77d",
+                    "on-primary": "#ffffff",
+                    "outline": "#707974",
+                    "on-secondary-container": "#762c12",
+                    "on-background": "#121c2a",
+                    "surface-container": "#e6eeff",
+                    "on-secondary": "#ffffff",
+                    "surface-container-highest": "#d9e3f6",
+                    "secondary": "#99462a",
+                    "surface-container-high": "#dee9fc",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#eaf1ff",
+                    "tertiary-container": "#6a3700",
+                    "surface-tint": "#2b6954",
+                    "on-surface": "#121c2a",
+                    "secondary-fixed": "#ffdbd0",
+                    "surface": "#f8f9ff",
+                    "surface-bright": "#f8f9ff",
+                    "surface-dim": "#d0dbed",
+                    "error": "#ba1a1a",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed-variant": "#0b513d",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed-variant": "#6e3900",
+                    "tertiary": "#4a2400",
+                    "outline-variant": "#bfc9c3",
+                    "on-secondary-fixed-variant": "#7a2f15",
+                    "primary-container": "#064e3b",
+                    "secondary-fixed-dim": "#ffb59e",
+                    "tertiary-fixed": "#ffdcc3"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "64px",
+                    "xl": "80px",
+                    "lg": "48px",
+                    "gutter": "24px",
+                    "base": "8px",
+                    "sm": "12px",
+                    "max-width": "1440px",
+                    "margin-mobile": "16px",
+                    "xs": "4px",
+                    "md": "24px"
+            },
+            "fontFamily": {
+                    "body-lg": [
+                            "Hanken Grotesk"
+                    ],
+                    "headline-lg-mobile": [
+                            "\"Source Serif 4\""
+                    ],
+                    "label-sm": [
+                            "Hanken Grotesk"
+                    ],
+                    "label-md": [
+                            "Hanken Grotesk"
+                    ],
+                    "headline-lg": [
+                            "\"Source Serif 4\""
+                    ],
+                    "display-lg": [
+                            "\"Source Serif 4\""
+                    ],
+                    "headline-md": [
+                            "\"Source Serif 4\""
+                    ],
+                    "body-md": [
+                            "Hanken Grotesk"
+                    ]
+            },
+            "fontSize": {
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.04em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg": [
+                            "40px",
+                            {
+                                    "lineHeight": "48px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "display-lg": [
+                            "56px",
+                            {
+                                    "lineHeight": "64px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(6, 78, 59, 0.05);
+        }
+        
+        .dark .glass-panel {
+            background-color: rgba(0, 0, 0, 0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Nexus Grid Pattern Background */
+        .bg-nexus-grid {
+            background-size: 32px 32px;
+            background-image: 
+                linear-gradient(to right, rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md bg-nexus-grid min-h-screen">
+<!-- TopNavBar Shared Component -->
+<nav class="bg-white/60 dark:bg-black/40 backdrop-blur-[10px] fixed top-0 w-full z-50 border-b border-white/30 dark:border-white/10 shadow-[0_8px_32px_rgba(6,78,59,0.05)]">
+<div class="flex justify-between items-center px-margin-desktop w-full max-w-max-width mx-auto h-20">
+<!-- Brand -->
+<a class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed" href="#">
+                CivicNexus
+            </a>
+<!-- Desktop Navigation -->
+<div class="hidden md:flex items-center gap-gutter">
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Explore</a>
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Map</a>
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Projects</a>
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Universities</a>
+<a class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Industry</a>
+<a class="font-label-md text-label-md text-primary dark:text-primary-fixed border-b-2 border-primary dark:border-primary-fixed pb-1 opacity-80 transition-all duration-200" href="#">Impact</a>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-sm">
+<div class="hidden md:flex relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="bg-surface-container-low border border-outline-variant rounded-full py-2 pl-10 pr-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary transition-all w-48" placeholder="Search..." type="text"/>
+</div>
+<button aria-label="Notifications" class="text-on-surface-variant hover:text-primary transition-colors p-2">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button aria-label="Account" class="text-on-surface-variant hover:text-primary transition-colors p-2">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+<button class="hidden md:block bg-primary-container text-on-primary font-label-md text-label-md px-4 py-2 rounded-lg hover:opacity-90 transition-opacity ml-2">
+                    Report a Challenge
+                </button>
+<!-- Mobile Menu Toggle (Decorative) -->
+<button class="md:hidden text-on-surface-variant p-2">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Main Content Layout -->
+<main class="pt-[100px] pb-xl px-margin-mobile md:px-margin-desktop max-w-max-width mx-auto">
+<!-- Page Header -->
+<header class="mb-lg flex flex-col md:flex-row md:items-end justify-between gap-md">
+<div>
+<h1 class="font-display-lg text-display-lg text-primary mb-xs">Innovation Impact</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+                    Real-time metrics tracking the civic initiatives deployed across our global network, measuring tangible improvements in community resilience and resource management.
+                </p>
+</div>
+<div class="flex gap-sm">
+<button class="flex items-center gap-xs px-4 py-2 border border-primary text-primary rounded-lg hover:bg-surface-container-low transition-colors font-label-md text-label-md">
+<span class="material-symbols-outlined text-sm" data-icon="download">download</span>
+                    Export Report
+                </button>
+</div>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter auto-rows-min">
+<!-- Global KPIs (Top Row) -->
+<div class="md:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-gutter mb-md">
+<!-- KPI 1 -->
+<div class="glass-panel rounded-xl p-md flex flex-col justify-between">
+<div class="flex justify-between items-start mb-lg">
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="task_alt">task_alt</span>
+<span class="bg-surface-container-high text-primary font-label-sm text-label-sm px-2 py-1 rounded-full flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span> 12%
+                        </span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-xs">Challenges Solved</p>
+<p class="font-headline-lg text-headline-lg text-primary">1,402</p>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="glass-panel rounded-xl p-md flex flex-col justify-between">
+<div class="flex justify-between items-start mb-lg">
+<span class="material-symbols-outlined text-tertiary-container text-3xl" data-icon="groups">groups</span>
+<span class="bg-surface-container-high text-primary font-label-sm text-label-sm px-2 py-1 rounded-full flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span> 8.5%
+                        </span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-xs">People Impacted</p>
+<p class="font-headline-lg text-headline-lg text-primary">2.4M</p>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="glass-panel rounded-xl p-md flex flex-col justify-between">
+<div class="flex justify-between items-start mb-lg">
+<span class="material-symbols-outlined text-primary-container text-3xl" data-icon="eco">eco</span>
+<span class="bg-surface-container-high text-primary font-label-sm text-label-sm px-2 py-1 rounded-full flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span> 15%
+                        </span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-xs">Resources Saved (USD)</p>
+<p class="font-headline-lg text-headline-lg text-primary">$45.8M</p>
+</div>
+</div>
+</div>
+<!-- Main Chart Area (Spans 8 cols) -->
+<div class="md:col-span-8 glass-panel rounded-xl p-md flex flex-col min-h-[400px]">
+<div class="flex justify-between items-center mb-md">
+<h2 class="font-headline-md text-headline-md text-on-background">Impact by Domain</h2>
+<select class="bg-surface-container-low border border-outline-variant text-on-surface-variant font-label-sm rounded-md px-2 py-1 focus:ring-primary focus:border-primary">
+<option>2024 (YTD)</option>
+<option>2023</option>
+<option>All Time</option>
+</select>
+</div>
+<!-- Chart Placeholder / Visualization -->
+<div class="flex-grow flex items-end justify-between gap-2 pt-lg border-b border-outline-variant/30 pb-2 relative h-full">
+<!-- Y Axis Labels -->
+<div class="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-xs text-outline-variant pb-8">
+<span>100%</span>
+<span>75%</span>
+<span>50%</span>
+<span>25%</span>
+<span>0%</span>
+</div>
+<!-- Bar Group 1 -->
+<div class="w-1/6 flex flex-col items-center justify-end h-full gap-2 pl-8 group">
+<div class="w-full bg-secondary-container/80 rounded-t-sm h-[60%] hover:bg-secondary-container transition-colors relative cursor-pointer">
+<!-- Tooltip -->
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-inverse-surface text-on-secondary font-label-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">60% Urban</div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant text-center leading-tight">Urban Mobility</span>
+</div>
+<!-- Bar Group 2 -->
+<div class="w-1/6 flex flex-col items-center justify-end h-full gap-2 group">
+<div class="w-full bg-primary-fixed/80 rounded-t-sm h-[85%] hover:bg-primary-fixed transition-colors relative cursor-pointer">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-inverse-surface text-on-secondary font-label-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">85% Water</div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant text-center leading-tight">Water Mgmt</span>
+</div>
+<!-- Bar Group 3 -->
+<div class="w-1/6 flex flex-col items-center justify-end h-full gap-2 group">
+<div class="w-full bg-tertiary-container/60 rounded-t-sm h-[45%] hover:bg-tertiary-container transition-colors relative cursor-pointer">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-inverse-surface text-on-secondary font-label-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">45% Waste</div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant text-center leading-tight">Waste Mgmt</span>
+</div>
+<!-- Bar Group 4 -->
+<div class="w-1/6 flex flex-col items-center justify-end h-full gap-2 group">
+<div class="w-full bg-secondary/80 rounded-t-sm h-[70%] hover:bg-secondary transition-colors relative cursor-pointer">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-inverse-surface text-on-secondary font-label-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">70% Energy</div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant text-center leading-tight">Clean Energy</span>
+</div>
+<!-- Bar Group 5 -->
+<div class="w-1/6 flex flex-col items-center justify-end h-full gap-2 group pr-2">
+<div class="w-full bg-primary-container/70 rounded-t-sm h-[55%] hover:bg-primary-container transition-colors relative cursor-pointer">
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-inverse-surface text-on-secondary font-label-sm px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">55% Public Space</div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant text-center leading-tight">Public Spaces</span>
+</div>
+</div>
+</div>
+<!-- Regional Heatmap (Spans 4 cols) -->
+<div class="md:col-span-4 glass-panel rounded-xl p-md flex flex-col min-h-[400px]">
+<h2 class="font-headline-md text-headline-md text-on-background mb-sm">Regional Activity</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">Concentration of active challenges.</p>
+<!-- Map Image Placeholder -->
+<div class="flex-grow rounded-lg overflow-hidden relative border border-outline-variant/50">
+<img class="w-full h-full object-cover absolute inset-0" data-alt="A highly detailed, sophisticated light-mode map visualization of global regions. The map uses a minimalist aesthetic with a warm ivory background and deep forest green landmasses. Subtle terracotta orange heat map dots indicate areas of high activity. The style is institutional, clean, and modern, suitable for a professional dashboard." data-location="Global Map" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOHOOK1klNMrrBIxGQyNFrTldf5fG0vyqczDs2y98epngQCASYfqYKK52JaPF5zZZ19UcY3PBx54wZY1Cx5xmljpJlsVe1P7cIOFlT8hIvUlpCQEQKiw7gZcvT4CDRPPDaN_J3KtgELhXiRgwKoS0xkt-W0l8btufLGUGi2oc5atLiYRDsXzjUnVuJgXNSebsxc1ouQkJkG0sGLSFDlsAKKljgARrfNN-B4Ug2baheGizDGvlCyY7SDQ"/>
+<!-- Overlay markers (simulated) -->
+<div class="absolute top-1/4 left-1/4 w-4 h-4 bg-secondary rounded-full opacity-80 animate-pulse border-2 border-white shadow-lg"></div>
+<div class="absolute top-1/2 left-1/2 w-6 h-6 bg-secondary-container rounded-full opacity-70 border-2 border-white shadow-lg"></div>
+<div class="absolute bottom-1/3 right-1/4 w-3 h-3 bg-secondary rounded-full opacity-90 border border-white shadow-lg"></div>
+</div>
+<!-- Legend -->
+<div class="flex justify-between items-center mt-sm pt-sm border-t border-outline-variant/30 font-label-sm text-label-sm text-on-surface-variant">
+<span>Low</span>
+<div class="flex-grow mx-4 h-2 rounded-full bg-gradient-to-r from-surface-variant via-secondary-container to-secondary"></div>
+<span>High</span>
+</div>
+</div>
+<!-- SDG Alignment (Spans 6 cols) -->
+<div class="md:col-span-6 glass-panel rounded-xl p-md">
+<h2 class="font-headline-md text-headline-md text-on-background mb-md">SDG Alignment</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-sm">
+<!-- SDG Card 1 -->
+<div class="bg-surface-container-low rounded-lg p-sm border border-outline-variant/50 flex items-start gap-sm">
+<div class="w-12 h-12 rounded bg-tertiary-container flex items-center justify-center flex-shrink-0">
+<span class="font-headline-md text-on-secondary font-bold">11</span>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-background">Sustainable Cities</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">42% of active projects</p>
+<div class="w-full bg-surface-variant h-1.5 rounded-full mt-2">
+<div class="bg-tertiary-container h-1.5 rounded-full w-[42%]"></div>
+</div>
+</div>
+</div>
+<!-- SDG Card 2 -->
+<div class="bg-surface-container-low rounded-lg p-sm border border-outline-variant/50 flex items-start gap-sm">
+<div class="w-12 h-12 rounded bg-primary-fixed-dim flex items-center justify-center flex-shrink-0">
+<span class="font-headline-md text-on-primary-fixed-variant font-bold">6</span>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-background">Clean Water</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">28% of active projects</p>
+<div class="w-full bg-surface-variant h-1.5 rounded-full mt-2">
+<div class="bg-primary-fixed-dim h-1.5 rounded-full w-[28%]"></div>
+</div>
+</div>
+</div>
+<!-- SDG Card 3 -->
+<div class="bg-surface-container-low rounded-lg p-sm border border-outline-variant/50 flex items-start gap-sm">
+<div class="w-12 h-12 rounded bg-secondary-container flex items-center justify-center flex-shrink-0">
+<span class="font-headline-md text-on-secondary-container font-bold">4</span>
+</div>
+<div>
+<h3 class="font-label-md text-label-md text-on-background">Quality Education</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">15% of active projects</p>
+<div class="w-full bg-surface-variant h-1.5 rounded-full mt-2">
+<div class="bg-secondary-container h-1.5 rounded-full w-[15%]"></div>
+</div>
+</div>
+</div>
+<!-- SDG Summary -->
+<div class="flex items-center justify-center p-sm">
+<a class="text-primary font-label-md text-label-md hover:underline flex items-center gap-xs" href="#">
+                             View Complete SDG Mapping <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Success Metrics Comparison (Spans 6 cols) -->
+<div class="md:col-span-6 glass-panel rounded-xl p-md">
+<div class="flex justify-between items-center mb-md">
+<h2 class="font-headline-md text-headline-md text-on-background">Before vs After Implementations</h2>
+<span class="bg-primary-container text-on-primary font-label-sm text-label-sm px-2 py-1 rounded-full">Aggregate Data</span>
+</div>
+<div class="space-y-md">
+<!-- Metric 1 -->
+<div>
+<div class="flex justify-between font-label-md text-label-md mb-2">
+<span class="text-on-background">Average Resolution Time</span>
+<span class="text-primary font-bold">-45%</span>
+</div>
+<div class="relative h-6 bg-surface-container-low rounded-full border border-outline-variant/50 overflow-hidden">
+<!-- Before (Background line) -->
+<div class="absolute top-1/2 -translate-y-1/2 left-2 right-2 border-t border-dashed border-outline-variant"></div>
+<!-- After (Solid Bar) -->
+<div class="absolute top-0 bottom-0 left-0 bg-primary-fixed-dim/50 border-r-2 border-primary-container w-[55%]"></div>
+<!-- Markers -->
+<div class="absolute top-1 left-2 font-label-sm text-[10px] text-on-surface-variant">New: 3.2 Mos</div>
+<div class="absolute top-1 right-2 font-label-sm text-[10px] text-on-surface-variant">Prev: 5.8 Mos</div>
+</div>
+</div>
+<!-- Metric 2 -->
+<div>
+<div class="flex justify-between font-label-md text-label-md mb-2">
+<span class="text-on-background">Community Engagement Rate</span>
+<span class="text-secondary font-bold">+120%</span>
+</div>
+<div class="relative h-6 bg-surface-container-low rounded-full border border-outline-variant/50 overflow-hidden">
+<!-- Before (Solid Bar) -->
+<div class="absolute top-0 bottom-0 left-0 bg-surface-variant w-[30%] border-r border-outline-variant"></div>
+<!-- After (Extended Bar) -->
+<div class="absolute top-0 bottom-0 left-[30%] bg-secondary-container/50 border-r-2 border-secondary w-[50%]"></div>
+<!-- Markers -->
+<div class="absolute top-1 left-2 font-label-sm text-[10px] text-on-surface-variant z-10">Prev: 12%</div>
+<div class="absolute top-1 left-[75%] font-label-sm text-[10px] text-on-secondary-container z-10 font-bold">New: 26%</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Shared Component -->
+<footer class="bg-surface-container-lowest dark:bg-inverse-surface border-t border-outline-variant w-full mt-xl">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-lg px-margin-desktop py-xl max-w-max-width mx-auto">
+<div class="md:col-span-1">
+<div class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed mb-sm">
+                    CivicNexus
+                </div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">
+                    © 2024 CivicNexus. From Citizen Voice to Real-World Impact.
+                </p>
+<div class="flex gap-sm">
+<!-- Social placeholders -->
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="share">share</span>
+</div>
+</div>
+</div>
+<div class="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-md">
+<div class="flex flex-col gap-sm">
+<span class="font-label-md text-label-md font-bold text-on-background">Navigation</span>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:underline decoration-primary" href="#">Sitemap</a>
+</div>
+<div class="flex flex-col gap-sm">
+<span class="font-label-md text-label-md font-bold text-on-background">Legal</span>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:underline decoration-primary" href="#">Privacy Policy</a>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:underline decoration-primary" href="#">Terms of Service</a>
+</div>
+<div class="flex flex-col gap-sm">
+<span class="font-label-md text-label-md font-bold text-on-background">Trust</span>
+<a class="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant hover:underline decoration-primary" href="#">Verified Badges</a>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

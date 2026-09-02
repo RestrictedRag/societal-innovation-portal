@@ -10,6 +10,7 @@ import { buildNearbyProblemsGeoQuery } from '@/lib/geo-query';
 import { auth } from '@/lib/auth/server';
 
 type FeedCursor = {
+  activeProjectCount: number;
   createdAt: string;
   id: string;
 };
@@ -35,7 +36,11 @@ function decodeCursor(raw: string | null): FeedCursor | null {
     const decoded = Buffer.from(raw, 'base64url').toString('utf8');
     const parsed = JSON.parse(decoded) as Partial<FeedCursor>;
     if (typeof parsed.createdAt === 'string' && typeof parsed.id === 'string') {
-      return { createdAt: parsed.createdAt, id: parsed.id };
+      return {
+        activeProjectCount: typeof parsed.activeProjectCount === 'number' ? parsed.activeProjectCount : 0,
+        createdAt: parsed.createdAt,
+        id: parsed.id,
+      };
     }
   } catch {
     // ignore invalid base64 cursor and fallback to legacy raw format
@@ -43,7 +48,7 @@ function decodeCursor(raw: string | null): FeedCursor | null {
 
   const [createdAt, id] = raw.split('|');
   if (createdAt && id) {
-    return { createdAt, id };
+    return { activeProjectCount: 0, createdAt, id };
   }
 
   return null;
@@ -121,6 +126,22 @@ export async function GET(request: Request) {
       ? `(cp.status IN ('OPEN', 'IN_PROGRESS') OR (cp.status = 'PENDING_MODERATION' AND cp.user_id = '${currentUserId}'))`
       : `cp.status IN ('OPEN', 'IN_PROGRESS')`;
 
+    // Active project count subquery used for select and ranking demotion
+    const activeProjectCountSubquery = `(
+      SELECT COUNT(*)::int
+      FROM university_projects up
+      WHERE up.problem_id = cp.id
+        AND up.status = 'ACTIVE'
+    )`;
+
+    const cursorClause = cursor
+      ? `AND (
+          (${activeProjectCountSubquery} > $4)
+          OR (${activeProjectCountSubquery} = $4 AND cp.created_at < $5)
+          OR (${activeProjectCountSubquery} = $4 AND cp.created_at = $5 AND cp.id < $6)
+        )`
+      : '';
+
     const query = `
       SELECT
         cp.id,
@@ -133,12 +154,7 @@ export async function GET(request: Request) {
         cp.domain,
         cp.image_url,
         cp.created_at,
-        (
-          SELECT COUNT(*)::int
-          FROM university_projects up
-          WHERE up.problem_id = cp.id
-            AND up.status = 'ACTIVE'
-        ) AS active_project_count,
+        ${activeProjectCountSubquery} AS active_project_count,
         0::int AS upvote_count,
         ${geo.distanceExpression}
       FROM citizen_problems cp
@@ -146,15 +162,15 @@ export async function GET(request: Request) {
       WHERE ${statusClause}
         AND (${geo.effectiveLatitude} IS NOT NULL AND ${geo.effectiveLongitude} IS NOT NULL)
         ${geo.distanceFilter}
-      ${cursor ? 'AND (cp.created_at, cp.id) < ($4, $5)' : ''}
-      ORDER BY cp.created_at DESC, cp.id DESC
-      LIMIT $${cursor ? 6 : 4};
+        ${cursorClause}
+      ORDER BY ${activeProjectCountSubquery} ASC, cp.created_at DESC, cp.id DESC
+      LIMIT $${cursor ? 7 : 4};
     `;
 
     console.log('[FEED_ROUTE_DEBUG] statusClause:', statusClause);
 
     const values = cursor
-      ? [lng, lat, radiusKm * 1000, cursor.createdAt, cursor.id, limit]
+      ? [lng, lat, radiusKm * 1000, cursor.activeProjectCount, cursor.createdAt, cursor.id, limit]
       : [lng, lat, radiusKm * 1000, limit];
 
     const rows = (await sql.unsafe(query, values)) as Array<{
@@ -171,7 +187,7 @@ export async function GET(request: Request) {
       distance_km: number;
     }>;
 
-    console.log('[FEED_ROUTE_DEBUG] rows returned count:', rows.length, rows.map(r => ({ id: r.id, status: r.status, title: r.title })));
+    console.log('[FEED_ROUTE_DEBUG] rows returned count:', rows.length, rows.map(r => ({ id: r.id, status: r.status, title: r.title, activeProjects: r.active_project_count })));
 
     const items = rows.map((row) => ({
       id: row.id,
@@ -190,6 +206,7 @@ export async function GET(request: Request) {
 
     const nextCursor = items.length === limit && items.length > 0
       ? encodeCursor({
+          activeProjectCount: items[items.length - 1].activeProjectCount,
           createdAt: items[items.length - 1].createdAt,
           id: items[items.length - 1].id,
         })

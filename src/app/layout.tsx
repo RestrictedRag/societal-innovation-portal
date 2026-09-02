@@ -1,5 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import { AuthProvider } from '@/lib/auth/use-auth';
 import { ChatWidget } from '@/components/chat/ChatWidget';
 
 export const metadata: Metadata = {
@@ -10,9 +11,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        {children}
-        <ChatWidget />
+      <body suppressHydrationWarning>
+        <AuthProvider>
+          {children}
+          <ChatWidget />
+        </AuthProvider>
       </body>
     </html>
   );

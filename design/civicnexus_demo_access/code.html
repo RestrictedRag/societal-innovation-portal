@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CivicNexus Demo Access</title>
+<!-- Material Symbols (Literal Transcription) -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400..700&amp;family=Hanken+Grotesk:wght@400..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary": "#003527",
+                      "tertiary-fixed": "#ffdcc3",
+                      "on-primary-container": "#80bea6",
+                      "tertiary-container": "#6a3700",
+                      "tertiary-fixed-dim": "#ffb77d",
+                      "on-secondary-fixed": "#390b00",
+                      "on-surface-variant": "#404944",
+                      "on-tertiary-fixed": "#2f1500",
+                      "surface-container-high": "#dee9fc",
+                      "surface": "#f8f9ff",
+                      "surface-container-low": "#eff4ff",
+                      "primary-container": "#064e3b",
+                      "surface-container-highest": "#d9e3f6",
+                      "secondary-fixed-dim": "#ffb59e",
+                      "inverse-on-surface": "#eaf1ff",
+                      "secondary-container": "#fe9572",
+                      "inverse-surface": "#27313f",
+                      "on-secondary-container": "#762c12",
+                      "on-tertiary-container": "#ff9939",
+                      "primary-fixed-dim": "#95d3ba",
+                      "surface-tint": "#2b6954",
+                      "secondary-fixed": "#ffdbd0",
+                      "on-primary-fixed-variant": "#0b513d",
+                      "on-surface": "#121c2a",
+                      "background": "#f8f9ff",
+                      "error": "#ba1a1a",
+                      "secondary": "#99462a",
+                      "on-error": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#6e3900",
+                      "outline-variant": "#bfc9c3",
+                      "on-primary": "#ffffff",
+                      "surface-container": "#e6eeff",
+                      "surface-dim": "#d0dbed",
+                      "primary-fixed": "#b0f0d6",
+                      "error-container": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "surface-variant": "#d9e3f6",
+                      "on-background": "#121c2a",
+                      "surface-bright": "#f8f9ff",
+                      "inverse-primary": "#95d3ba",
+                      "on-secondary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary": "#4a2400",
+                      "on-primary-fixed": "#002117",
+                      "on-secondary-fixed-variant": "#7a2f15",
+                      "outline": "#707974"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "base": "8px",
+                      "xl": "80px",
+                      "md": "24px",
+                      "xs": "4px",
+                      "lg": "48px",
+                      "sm": "12px",
+                      "max-width": "1440px",
+                      "margin-desktop": "64px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "label-sm": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-lg": [
+                              "\"Source Serif 4\""
+                      ],
+                      "headline-md": [
+                              "\"Source Serif 4\""
+                      ],
+                      "body-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "label-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "display-lg": [
+                              "\"Source Serif 4\""
+                      ],
+                      "headline-lg-mobile": [
+                              "\"Source Serif 4\""
+                      ],
+                      "body-md": [
+                              "Hanken Grotesk"
+                      ]
+              },
+              "fontSize": {
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.04em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "40px",
+                              {
+                                      "lineHeight": "48px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "56px",
+                              {
+                                      "lineHeight": "64px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .nexus-grid-bg {
+            background-color: #f8f9ff;
+            background-image: 
+                linear-gradient(rgba(0, 53, 39, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 53, 39, 0.05) 1px, transparent 1px);
+            background-size: 32px 32px;
+            background-position: center center;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(6, 78, 59, 0.05);
+        }
+    </style>
+</head>
+<body class="nexus-grid-bg text-on-surface min-h-screen flex flex-col items-center justify-center font-body-md">
+<!-- TopNavBar (Transactional/Splash screen, so nav is suppressed, but keeping a simple header per instructions if needed, though instructions say to suppress. I will suppress nav and just show the content canvas) -->
+<main class="w-full max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop py-xl">
+<header class="text-center mb-lg max-w-3xl mx-auto">
+<h1 class="font-display-lg text-display-lg text-primary mb-md">Explore CivicNexus</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">
+                Choose a role to explore how different members of the CivicNexus ecosystem experience the platform.
+            </p>
+</header>
+<!-- Bento Grid Layout for Roles -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md mb-xl">
+<!-- Citizen Card -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1">
+<div>
+<div class="w-12 h-12 rounded-full bg-primary-fixed/20 flex items-center justify-center mb-md text-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary mb-sm">Citizen</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">
+                        Engage with local challenges, propose solutions, and connect with your community network.
+                    </p>
+</div>
+<button class="w-full py-sm px-md bg-primary-container text-on-primary rounded-lg font-label-md text-label-md transition-opacity hover:opacity-90">
+                    Enter Demo
+                </button>
+</div>
+<!-- Student Card -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1">
+<div>
+<div class="w-12 h-12 rounded-full bg-secondary-container/20 flex items-center justify-center mb-md text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">school</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary mb-sm">Student</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">
+                        Join civic projects for credit, collaborate with peers, and build an impact portfolio.
+                    </p>
+</div>
+<button class="w-full py-sm px-md bg-primary-container text-on-primary rounded-lg font-label-md text-label-md transition-opacity hover:opacity-90">
+                    Enter Demo
+                </button>
+</div>
+<!-- Faculty Card -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1">
+<div>
+<div class="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center mb-md text-tertiary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary mb-sm">Faculty</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">
+                        Manage university projects, mentor students, and connect research to real-world impact.
+                    </p>
+</div>
+<button class="w-full py-sm px-md bg-primary-container text-on-primary rounded-lg font-label-md text-label-md transition-opacity hover:opacity-90">
+                    Enter Demo
+                </button>
+</div>
+<!-- Industry Card -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1 lg:col-span-1 lg:col-start-2">
+<div>
+<div class="w-12 h-12 rounded-full bg-surface-tint/20 flex items-center justify-center mb-md text-surface-tint">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">domain</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary mb-sm">Industry</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">
+                        Sponsor civic initiatives, recruit top talent, and demonstrate corporate social responsibility.
+                    </p>
+</div>
+<button class="w-full py-sm px-md bg-primary-container text-on-primary rounded-lg font-label-md text-label-md transition-opacity hover:opacity-90">
+                    Enter Demo
+                </button>
+</div>
+<!-- Admin Card -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between transition-transform duration-300 hover:-translate-y-1 lg:col-span-1 lg:col-start-3">
+<div>
+<div class="w-12 h-12 rounded-full bg-outline-variant/30 flex items-center justify-center mb-md text-outline">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary mb-sm">Admin</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">
+                        Oversee ecosystem health, manage network nodes, and ensure secure platform operations.
+                    </p>
+</div>
+<button class="w-full py-sm px-md border border-primary-container text-primary-container rounded-lg font-label-md text-label-md transition-colors hover:bg-primary-container hover:text-on-primary">
+                    Enter Demo
+                </button>
+</div>
+</div>
+<!-- Footer Notice -->
+<div class="flex items-center justify-center space-x-sm text-on-surface-variant font-label-sm text-label-sm opacity-80">
+<span class="material-symbols-outlined text-[16px]">info</span>
+<span>Demo mode is intended for local testing and presentations.</span>
+</div>
+</main>
+</body></html>

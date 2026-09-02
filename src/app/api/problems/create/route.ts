@@ -2,14 +2,9 @@ import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/db';
-import { citizenProblems, problemMedia, users } from '@/db/schema';
-import { auth } from '@/lib/auth/server';
+import { citizenProblems, problemMedia } from '@/db/schema';
+import { requireRole, createRbacErrorResponse } from '@/lib/auth/require-role';
 import { enqueueProblemJob } from '@/lib/redis';
-
-async function getSessionUser() {
-  const { data: session } = await auth.getSession();
-  return session?.user ?? null;
-}
 
 function describeError(error: unknown) {
   if (error && typeof error === 'object') {
@@ -32,13 +27,11 @@ function describeError(error: unknown) {
 
 export async function POST(request: Request) {
   try {
-    const sessionUser = await getSessionUser();
-    if (!sessionUser?.id) {
-      console.error('Problem create failed: auth check', {
-        reason: 'missing or invalid Neon Auth session',
-      });
-      return NextResponse.json({ error: 'You must be signed in to submit a problem.' }, { status: 401 });
+    const authResult = await requireRole(['CITIZEN', 'STUDENT', 'FACULTY', 'COMPANY_REP', 'ADMIN']);
+    if (!authResult.success) {
+      return createRbacErrorResponse(authResult);
     }
+    const user = authResult.user;
 
     const payload = await request.json();
     const rawClientId = typeof payload?.clientId === 'string' ? payload.clientId.trim() : null;
@@ -47,6 +40,9 @@ export async function POST(request: Request) {
     const title = String(payload?.title ?? '').trim();
     const description = String(payload?.description ?? '').trim();
     const domain = String(payload?.domain ?? '').trim();
+    const problemType = typeof payload?.problemType === 'string' ? payload.problemType.trim() : null;
+    const category = typeof payload?.category === 'string' ? payload.category.trim() : null;
+    const subcategory = typeof payload?.subcategory === 'string' ? payload.subcategory.trim() : null;
     const imageUrl = typeof payload?.imageUrl === 'string' ? payload.imageUrl.trim() : null;
     const rawLat = payload?.latitude ?? payload?.location?.lat;
     const rawLng = payload?.longitude ?? payload?.location?.lng;
@@ -85,24 +81,6 @@ export async function POST(request: Request) {
       }, { status: 200 });
     }
 
-    const user = await db.query.users.findFirst({ where: eq(users.authUserId, sessionUser.id) });
-    if (!user) {
-      console.error('Problem create failed: auth check', {
-        reason: 'session user not found in database',
-        authUserId: sessionUser.id,
-        userEmail: sessionUser.email,
-      });
-      return NextResponse.json({ error: 'User profile not found. Please complete registration.' }, { status: 404 });
-    }
-
-    // Diagnostics: Print resolved user object
-    console.log('[DIAGNOSTICS] Problem create - Resolved user:', {
-      id: user.id,
-      authUserId: user.authUserId,
-      email: user.email,
-      role: user.role,
-    });
-
     const userId = user.id;
 
     let createdProblem: { id: string; clientId: string; createdAt: Date } | null = null;
@@ -116,6 +94,9 @@ export async function POST(request: Request) {
       longitude,
       status: 'PENDING_MODERATION' as const,
       domain: domain ? (domain as any) : null,
+      problemType: problemType || null,
+      category: category || null,
+      subcategory: subcategory || null,
     };
     console.log('[REPRO] Exact insert values:', JSON.stringify(insertValues));
     try {
