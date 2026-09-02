@@ -5,9 +5,9 @@ import { google } from '@ai-sdk/google';
  * Configures model identifiers and factory helpers in one place across all features.
  */
 export const AI_MODELS = {
-  SPAM_SCORING: 'gemini-1.5-flash',
-  TRIAGE: 'gemini-1.5-flash',
-  CHAT: 'gemini-1.5-flash',
+  SPAM_SCORING: 'gemini-flash-latest',
+  TRIAGE: 'gemini-flash-latest',
+  CHAT: 'gemini-flash-latest',
   EMBEDDING: 'text-embedding-004',
 } as const;
 
