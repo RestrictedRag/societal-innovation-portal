@@ -155,11 +155,16 @@ export async function submitWithRetry(
 
       // 3. Retryable: 5xx Server Errors
       if (!response.ok) {
-        throw new Error(`Server error (${response.status})`);
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error || `Server error (${response.status})`);
       }
 
       // 4. Success (200 OK / 201 Created)
-      const data = (await response.json()) as { problem: ConfirmedProblem };
+      const data = (await response.json().catch(() => null)) as { problem?: ConfirmedProblem } | null;
+      if (!data || !data.problem || !data.problem.id) {
+        throw new Error('Server did not return a valid confirmed problem record.');
+      }
+
       removeStoredSubmission(submission.clientId);
       callbacks.onSuccess(data.problem);
       return;

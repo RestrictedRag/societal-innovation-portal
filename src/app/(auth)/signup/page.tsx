@@ -52,7 +52,7 @@ export default function SignUpPage() {
     try {
       setFormError(null);
 
-      const { error: signUpError } = await authClient.signUp.email({
+      const { data: signUpData, error: signUpError } = await authClient.signUp.email({
         email: values.email,
         password: values.password,
         name: `${values.firstName} ${values.lastName}`,
@@ -69,6 +69,7 @@ export default function SignUpPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          authUserId: signUpData?.user?.id,
           firstName: values.firstName,
           lastName: values.lastName,
           email: values.email,

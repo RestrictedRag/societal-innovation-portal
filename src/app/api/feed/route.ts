@@ -91,13 +91,14 @@ export async function GET(request: Request) {
   try {
     // Retrieve authenticated user if session exists
     let currentUserId: string | null = null;
-    let sessionUserEmail: string | null = null;
+    let authUserId: string | null = null;
     try {
       const { data: session } = await auth.getSession();
-      sessionUserEmail = session?.user?.email ?? null;
-      if (sessionUserEmail) {
+      console.log('[FEED_REPRO] auth.getSession() resolved to:', JSON.stringify(session, null, 2));
+      authUserId = session?.user?.id ?? null;
+      if (authUserId) {
         const userRows = await sql`
-          SELECT id FROM users WHERE email = ${sessionUserEmail} LIMIT 1
+          SELECT id FROM users WHERE auth_user_id = ${authUserId} LIMIT 1
         `;
         if (userRows.length > 0) {
           currentUserId = userRows[0].id;
@@ -112,7 +113,7 @@ export async function GET(request: Request) {
       lng,
       radiusKm,
       limit,
-      sessionUserEmail,
+      authUserId,
       currentUserId,
     });
 
@@ -156,7 +157,7 @@ export async function GET(request: Request) {
       ? [lng, lat, radiusKm * 1000, cursor.createdAt, cursor.id, limit]
       : [lng, lat, radiusKm * 1000, limit];
 
-    const rows = (await sql.unsafe(query, ...(values as any[]))) as Array<{
+    const rows = (await sql.unsafe(query, values)) as Array<{
       id: string;
       client_id: string | null;
       status: string;

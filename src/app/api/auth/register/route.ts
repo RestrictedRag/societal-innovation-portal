@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/db';
 import { users } from '@/db/schema';
+import { auth } from '@/lib/auth/server';
 
 const registerProfileSchema = z
   .object({
+    authUserId: z.string().trim().optional(),
     firstName: z.string().trim().min(1, 'First name is required.'),
     lastName: z.string().trim().min(1, 'Last name is required.'),
     email: z.string().trim().email('Please enter a valid email address.'),
@@ -29,8 +31,17 @@ const registerProfileSchema = z
 
 export async function POST(req: Request) {
   try {
+    const { data: session } = await auth.getSession();
     const body = await req.json();
     const validatedData = registerProfileSchema.parse(body);
+
+    const authUserId = session?.user?.id || validatedData.authUserId;
+    if (!authUserId) {
+      return NextResponse.json(
+        { message: 'Authentication session not found. Please log in or sign up again.' },
+        { status: 401 },
+      );
+    }
 
     const {
       firstName,
@@ -47,6 +58,7 @@ export async function POST(req: Request) {
     } = validatedData;
 
     await db.insert(users).values({
+      authUserId,
       firstName,
       lastName,
       fullName: `${firstName} ${lastName}`,

@@ -1,7 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
-
-
+import { ChatWidget } from '@/components/chat/ChatWidget';
 
 export const metadata: Metadata = {
   title: 'Civic Innovation Marketplace',
@@ -13,6 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         {children}
+        <ChatWidget />
       </body>
     </html>
   );

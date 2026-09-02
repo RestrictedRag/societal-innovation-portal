@@ -431,6 +431,10 @@ export function ProblemFeed() {
   };
 
   const handleConfirmedSuccess = (clientId: string, problem: ConfirmedProblem) => {
+    if (!problem?.id) {
+      console.error('handleConfirmedSuccess: Invalid confirmed problem data received', problem);
+      return;
+    }
     setItems((previous) =>
       previous.map((item) =>
         item.clientId === clientId || item.id === clientId || item.backupId === clientId

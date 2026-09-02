@@ -32,6 +32,7 @@ export async function checkRateLimit(
   limit = 5,
   ttlSeconds = 60,
 ): Promise<boolean> {
+  if (!redisClient) return true; // Fail open if redis is not configured
   const client = getRedisClient();
   const key = `ratelimit:submit:${userId}`;
   const current = (await client.get<number>(key)) ?? 0;
@@ -42,6 +43,28 @@ export async function checkRateLimit(
 
   await client.set(key, current + 1, { ex: ttlSeconds });
   return true;
+}
+
+export async function checkChatRateLimit(
+  userId: string,
+  limit = 15,
+  ttlSeconds = 60,
+): Promise<boolean> {
+  if (!redisClient) return true;
+  try {
+    const client = getRedisClient();
+    const key = `ratelimit:chat:${userId}`;
+    const current = (await client.get<number>(key)) ?? 0;
+
+    if (current >= limit) {
+      return false;
+    }
+
+    await client.set(key, current + 1, { ex: ttlSeconds });
+    return true;
+  } catch {
+    return true;
+  }
 }
 
 export async function publishNotification(

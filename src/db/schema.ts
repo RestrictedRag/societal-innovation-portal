@@ -31,6 +31,8 @@ export const problemStatusEnum = pgEnum('problem_status', [
   'NEEDS_REVIEW',
   'REJECTED',
   'CLAIMED',
+  'MERGED',
+  'PROCESSING_FAILED',
 ] as const);
 
 export const mediaStatusEnum = pgEnum('media_status', [
@@ -124,6 +126,7 @@ export const users = pgTable(
   'users',
   {
     id: uuid('id').primaryKey().defaultRandom(),
+    authUserId: text('auth_user_id').notNull().unique(),
     email: text('email').notNull().unique(),
     passwordHash: text('password_hash'),
     firstName: text('first_name').notNull(),
@@ -209,6 +212,26 @@ export const problemEmbeddings = pgTable(
   }),
 );
 
+export const problemUpvotes = pgTable(
+  'problem_upvotes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    problemId: uuid('problem_id')
+      .notNull()
+      .references(() => citizenProblems.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    uniqueUserProblemUpvote: uniqueIndex('problem_upvotes_user_problem_unique').on(
+      table.problemId,
+      table.userId,
+    ),
+  }),
+);
+
 export const universityProjects = pgTable(
   'university_projects',
   {
@@ -262,6 +285,31 @@ export const escrowLedger = pgTable('escrow_ledger', {
   releasedAt: timestamp('released_at', { withTimezone: true }),
 });
 
+export const chatSessions = pgTable('chat_sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  title: text('title'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const chatMessages = pgTable('chat_messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sessionId: uuid('session_id')
+    .notNull()
+    .references(() => chatSessions.id, { onDelete: 'cascade' }),
+  role: text('role').notNull(),
+  content: text('content').notNull(),
+  toolCalls: text('tool_calls'),
+  toolResults: text('tool_results'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const usersRelations = relations(users, ({ many, one }) => ({
   university: one(universities, {
     fields: [users.universityId],
@@ -270,9 +318,28 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   }),
   citizenProblems: many(citizenProblems, { relationName: 'userCitizenProblems' }),
   claimedProblems: many(citizenProblems, { relationName: 'claimedProblems' }),
+  upvotes: many(problemUpvotes, { relationName: 'userProblemUpvotes' }),
+  chatSessions: many(chatSessions, { relationName: 'userChatSessions' }),
   universityProjects: many(universityProjects, { relationName: 'claimedByUserUniversityProjects' }),
   projectUpdates: many(projectUpdates, { relationName: 'verifiedByProjectUpdates' }),
   escrowLedgers: many(escrowLedger, { relationName: 'corporateEscrowLedgers' }),
+}));
+
+export const chatSessionsRelations = relations(chatSessions, ({ one, many }) => ({
+  user: one(users, {
+    fields: [chatSessions.userId],
+    references: [users.id],
+    relationName: 'userChatSessions',
+  }),
+  messages: many(chatMessages, { relationName: 'sessionMessages' }),
+}));
+
+export const chatMessagesRelations = relations(chatMessages, ({ one }) => ({
+  session: one(chatSessions, {
+    fields: [chatMessages.sessionId],
+    references: [chatSessions.id],
+    relationName: 'sessionMessages',
+  }),
 }));
 
 export const universitiesRelations = relations(universities, ({ many, one }) => ({
@@ -295,8 +362,22 @@ export const citizenProblemsRelations = relations(citizenProblems, ({ one, many 
     fields: [citizenProblems.id],
     references: [problemEmbeddings.problemId],
   }),
+  upvotes: many(problemUpvotes, { relationName: 'problemUpvotes' }),
   media: many(problemMedia),
   universityProjects: many(universityProjects),
+}));
+
+export const problemUpvotesRelations = relations(problemUpvotes, ({ one }) => ({
+  problem: one(citizenProblems, {
+    fields: [problemUpvotes.problemId],
+    references: [citizenProblems.id],
+    relationName: 'problemUpvotes',
+  }),
+  user: one(users, {
+    fields: [problemUpvotes.userId],
+    references: [users.id],
+    relationName: 'userProblemUpvotes',
+  }),
 }));
 
 export const problemMediaRelations = relations(problemMedia, ({ one }) => ({
@@ -375,10 +456,17 @@ export type ProblemMedia = typeof problemMedia.$inferSelect;
 export type NewProblemMedia = typeof problemMedia.$inferInsert;
 export type ProblemEmbedding = typeof problemEmbeddings.$inferSelect;
 export type NewProblemEmbedding = typeof problemEmbeddings.$inferInsert;
+export type ProblemUpvote = typeof problemUpvotes.$inferSelect;
+export type NewProblemUpvote = typeof problemUpvotes.$inferInsert;
+export type ChatSession = typeof chatSessions.$inferSelect;
+export type NewChatSession = typeof chatSessions.$inferInsert;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type NewChatMessage = typeof chatMessages.$inferInsert;
 export type UniversityProject = typeof universityProjects.$inferSelect;
 export type NewUniversityProject = typeof universityProjects.$inferInsert;
 export type ProjectUpdate = typeof projectUpdates.$inferSelect;
 export type NewProjectUpdate = typeof projectUpdates.$inferInsert;
 export type EscrowEntry = typeof escrowLedger.$inferSelect;
 export type NewEscrowEntry = typeof escrowLedger.$inferInsert;
+
 

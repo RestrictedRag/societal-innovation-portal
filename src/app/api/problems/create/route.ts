@@ -6,17 +6,22 @@ import { citizenProblems, problemMedia, users } from '@/db/schema';
 import { auth } from '@/lib/auth/server';
 import { enqueueProblemJob } from '@/lib/redis';
 
-async function getSessionUserEmail() {
+async function getSessionUser() {
   const { data: session } = await auth.getSession();
-  return session?.user?.email ?? null;
+  return session?.user ?? null;
 }
 
 function describeError(error: unknown) {
-  if (error instanceof Error) {
+  if (error && typeof error === 'object') {
+    const err = error as any;
+    const cause = err.cause ?? err;
     return {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
+      name: err.name,
+      message: cause?.message || err.message,
+      code: cause?.code || err.code,
+      detail: cause?.detail,
+      constraint: cause?.constraint,
+      stack: err.stack,
     };
   }
 
@@ -27,8 +32,8 @@ function describeError(error: unknown) {
 
 export async function POST(request: Request) {
   try {
-    const userEmail = await getSessionUserEmail();
-    if (!userEmail) {
+    const sessionUser = await getSessionUser();
+    if (!sessionUser?.id) {
       console.error('Problem create failed: auth check', {
         reason: 'missing or invalid Neon Auth session',
       });
@@ -80,37 +85,49 @@ export async function POST(request: Request) {
       }, { status: 200 });
     }
 
-    const user = await db.query.users.findFirst({ where: eq(users.email, userEmail) });
+    const user = await db.query.users.findFirst({ where: eq(users.authUserId, sessionUser.id) });
     if (!user) {
       console.error('Problem create failed: auth check', {
         reason: 'session user not found in database',
-        userEmail,
+        authUserId: sessionUser.id,
+        userEmail: sessionUser.email,
       });
-      return NextResponse.json({ error: 'User not found.' }, { status: 404 });
+      return NextResponse.json({ error: 'User profile not found. Please complete registration.' }, { status: 404 });
     }
+
+    // Diagnostics: Print resolved user object
+    console.log('[DIAGNOSTICS] Problem create - Resolved user:', {
+      id: user.id,
+      authUserId: user.authUserId,
+      email: user.email,
+      role: user.role,
+    });
 
     const userId = user.id;
 
     let createdProblem: { id: string; clientId: string; createdAt: Date } | null = null;
+    const insertValues = {
+      clientId,
+      userId,
+      title,
+      description,
+      imageUrl: imageUrl || null,
+      latitude,
+      longitude,
+      status: 'PENDING_MODERATION' as const,
+      domain: domain ? (domain as any) : null,
+    };
+    console.log('[REPRO] Exact insert values:', JSON.stringify(insertValues));
     try {
       [createdProblem] = await db
         .insert(citizenProblems)
-        .values({
-          clientId,
-          userId,
-          title,
-          description,
-          imageUrl: imageUrl || null,
-          latitude,
-          longitude,
-          status: 'PENDING_MODERATION',
-          domain: domain ? (domain as any) : null,
-        })
+        .values(insertValues)
         .returning({
           id: citizenProblems.id,
           clientId: citizenProblems.clientId,
           createdAt: citizenProblems.createdAt,
         });
+      console.log('[REPRO] Insert returned:', JSON.stringify(createdProblem));
     } catch (insertError: any) {
       const cause = insertError?.cause ?? insertError;
       const pgCode = cause?.code || insertError?.code;
@@ -139,12 +156,13 @@ export async function POST(request: Request) {
         }
       }
 
-      console.error('Problem create failed: DB insert', {
+      const described = describeError(insertError);
+      console.error('[DIAGNOSTICS] Problem create failed: DB insert error:', {
         userId,
         clientId,
         title,
         domain,
-        error: describeError(insertError),
+        error: described,
       });
       throw insertError;
     }
@@ -153,10 +171,10 @@ export async function POST(request: Request) {
     if (mediaEntries.length > 0) {
       try {
         await db.insert(problemMedia).values(
-          mediaEntries.map((mediaUrl): { problemId: string; url: string; status: 'PENDING_MODERATION' } => ({
+          mediaEntries.map((mediaUrl): { problemId: string; url: string; status: 'APPROVED' } => ({
             problemId: createdProblem!.id,
             url: mediaUrl,
-            status: 'PENDING_MODERATION',
+            status: 'APPROVED',
           })),
         );
       } catch (error) {
@@ -196,10 +214,12 @@ export async function POST(request: Request) {
       },
       { status: 201 },
     );
-  } catch (error) {
+  } catch (error: any) {
+    const errorDetails = describeError(error);
     console.error('Problem create failed: unhandled error', {
-      error: describeError(error),
+      error: errorDetails,
     });
-    return NextResponse.json({ error: 'Something went wrong while submitting your problem.' }, { status: 500 });
+    const errorMessage = error?.cause?.message ?? error?.message ?? 'Something went wrong while submitting your problem.';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
