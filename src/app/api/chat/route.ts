@@ -1,5 +1,5 @@
-import { eq, sql, desc } from 'drizzle-orm';
-import { streamText, tool } from 'ai';
+import { eq, sql } from 'drizzle-orm';
+import { streamText, tool, stepCountIs } from 'ai';
 import { google } from '@ai-sdk/google';
 import { z } from 'zod';
 import { NextResponse } from 'next/server';
@@ -9,10 +9,6 @@ import {
   chatMessages,
   chatSessions,
   citizenProblems,
-  escrowLedger,
-  projectUpdates,
-  universities,
-  universityProjects,
   users,
 } from '@/db/schema';
 import { auth } from '@/lib/auth/server';
@@ -20,6 +16,18 @@ import { CHAT_SYSTEM_PROMPT } from '@/lib/ai/chat-system-prompt';
 import { searchHelpKnowledge } from '@/lib/ai/help-knowledge';
 import { logger } from '@/lib/logger';
 import { checkChatRateLimit } from '@/lib/redis';
+
+// Helper to extract text content from a message (v7 UIMessage uses parts, not content)
+function getMessageText(msg: Record<string, unknown>): string {
+  if (typeof msg.content === 'string') return msg.content;
+  if (Array.isArray(msg.parts)) {
+    return (msg.parts as Array<{ type: string; text?: string }>)
+      .filter((p) => p.type === 'text' && typeof p.text === 'string')
+      .map((p) => p.text as string)
+      .join('\n');
+  }
+  return '';
+}
 
 export async function POST(request: Request) {
   try {
@@ -61,27 +69,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Messages array is required.' }, { status: 400 });
     }
 
-    // 3. User-Scoped Tools Definition
+    // 3. User-Scoped Tools Definition (AI SDK v7 uses inputSchema, not parameters)
     const tools = {
       getMyProblemStatus: tool({
-        description: `Retrieves the list of civic problems submitted by the currently logged-in user, along with their current review status, domain, spam assessment, and university claim info.`,
-        parameters: z.object({
+        description: 'Retrieves the list of civic problems submitted by the currently logged-in user, along with their current review status, domain, spam assessment, and university claim info.',
+        inputSchema: z.object({
           limit: z.number().min(1).max(20).default(5).describe('Maximum number of submitted problems to retrieve (default: 5)'),
         }),
         execute: async ({ limit }) => {
           try {
             logger.info('Tool call: getMyProblemStatus', { userId, limit });
-            const problems = await db.execute<{
-              id: string;
-              title: string;
-              description: string;
-              status: string;
-              domain: string | null;
-              spam_score: number | null;
-              created_at: string;
-              claimed_by: string | null;
-              lead_university_name: string | null;
-            }>(sql`
+            const problems = await db.execute(sql`
               SELECT
                 cp.id,
                 cp.title,
@@ -100,26 +98,29 @@ export async function POST(request: Request) {
               LIMIT ${limit};
             `);
 
-            const rows = Array.isArray(problems) ? problems : (problems as any)?.rows ?? [];
+            const rows = Array.isArray(problems) ? problems : ((problems as unknown as Record<string, unknown>)?.rows as unknown[]) ?? [];
             if (rows.length === 0) {
               return {
                 totalCount: 0,
                 message: 'You have not submitted any civic problem reports yet.',
-                problems: [],
+                problems: [] as Array<Record<string, unknown>>,
               };
             }
 
             return {
               totalCount: rows.length,
-              problems: rows.map((row: any) => ({
-                id: row.id,
-                title: row.title,
-                status: row.status,
-                domain: row.domain ?? 'Unassigned',
-                spamScore: row.spam_score,
-                claimedByUniversity: row.lead_university_name ?? (row.claimed_by ? 'Claimed by Academic Team' : 'Not yet claimed'),
-                submittedAt: new Date(row.created_at).toLocaleDateString(),
-              })),
+              problems: rows.map((row: unknown) => {
+                const r = row as Record<string, unknown>;
+                return {
+                  id: r.id as string,
+                  title: r.title as string,
+                  status: r.status as string,
+                  domain: (r.domain as string) ?? 'Unassigned',
+                  spamScore: r.spam_score as number | null,
+                  claimedByUniversity: (r.lead_university_name as string) ?? (r.claimed_by ? 'Claimed by Academic Team' : 'Not yet claimed'),
+                  submittedAt: new Date(r.created_at as string).toLocaleDateString(),
+                };
+              }),
             };
           } catch (toolErr) {
             logger.error('Tool getMyProblemStatus error', { userId, error: String(toolErr) });
@@ -129,24 +130,14 @@ export async function POST(request: Request) {
       }),
 
       getMyProjectStatus: tool({
-        description: `Retrieves claimed university projects for the current user, including milestone progress, TRL levels, and escrow funding state.`,
-        parameters: z.object({
+        description: 'Retrieves claimed university projects for the current user, including milestone progress, TRL levels, and escrow funding state.',
+        inputSchema: z.object({
           limit: z.number().min(1).max(10).default(5).describe('Maximum number of projects to return'),
         }),
         execute: async ({ limit }) => {
           try {
             logger.info('Tool call: getMyProjectStatus', { userId, limit });
-            const projects = await db.execute<{
-              id: string;
-              problem_title: string;
-              status: string;
-              budget: string;
-              lead_university_name: string;
-              total_milestones: number;
-              verified_milestones: number;
-              held_escrow: string;
-              released_escrow: string;
-            }>(sql`
+            const projects = await db.execute(sql`
               SELECT
                 up.id,
                 cp.title AS problem_title,
@@ -169,29 +160,32 @@ export async function POST(request: Request) {
               LIMIT ${limit};
             `);
 
-            const rows = Array.isArray(projects) ? projects : (projects as any)?.rows ?? [];
+            const rows = Array.isArray(projects) ? projects : ((projects as unknown as Record<string, unknown>)?.rows as unknown[]) ?? [];
             if (rows.length === 0) {
               return {
                 totalCount: 0,
                 message: 'No active or claimed research projects found for your account.',
-                projects: [],
+                projects: [] as Array<Record<string, unknown>>,
               };
             }
 
             return {
               totalCount: rows.length,
-              projects: rows.map((p: any) => ({
-                id: p.id,
-                problemTitle: p.problem_title,
-                status: p.status,
-                allocatedBudget: `$${Number(p.budget || 0).toLocaleString()}`,
-                leadUniversity: p.lead_university_name,
-                milestones: `${p.verified_milestones} of ${p.total_milestones} verified`,
-                escrow: {
-                  held: `$${Number(p.held_escrow || 0).toLocaleString()}`,
-                  released: `$${Number(p.released_escrow || 0).toLocaleString()}`,
-                },
-              })),
+              projects: rows.map((p: unknown) => {
+                const r = p as Record<string, unknown>;
+                return {
+                  id: r.id as string,
+                  problemTitle: r.problem_title as string,
+                  status: r.status as string,
+                  allocatedBudget: `$${Number(r.budget || 0).toLocaleString()}`,
+                  leadUniversity: r.lead_university_name as string,
+                  milestones: `${r.verified_milestones} of ${r.total_milestones} verified`,
+                  escrow: {
+                    held: `$${Number(r.held_escrow || 0).toLocaleString()}`,
+                    released: `$${Number(r.released_escrow || 0).toLocaleString()}`,
+                  },
+                };
+              }),
             };
           } catch (toolErr) {
             logger.error('Tool getMyProjectStatus error', { userId, error: String(toolErr) });
@@ -201,8 +195,8 @@ export async function POST(request: Request) {
       }),
 
       searchAppHelp: tool({
-        description: `Searches the curated Civic Innovation Marketplace platform knowledge base for explanations of how submission, spam review, university claiming, milestones, and escrow work.`,
-        parameters: z.object({
+        description: 'Searches the curated Civic Innovation Marketplace platform knowledge base for explanations of how submission, spam review, university claiming, milestones, and escrow work.',
+        inputSchema: z.object({
           query: z.string().describe('Search terms or questions regarding how the platform works'),
         }),
         execute: async ({ query }) => {
@@ -210,7 +204,7 @@ export async function POST(request: Request) {
           const matches = searchHelpKnowledge(query, 3);
           if (matches.length === 0) {
             return {
-              results: [],
+              results: [] as Array<{ title: string; category: string; content: string }>,
               message: 'No specific help article matched your query. You can ask about submission rules, spam scoring, university claiming, or escrow funding.',
             };
           }
@@ -227,79 +221,82 @@ export async function POST(request: Request) {
     };
 
     // 4. Resolve Active Session for Persistence
-    let currentSessionId = sessionId;
+    let currentSessionId = sessionId as string | undefined;
     if (!currentSessionId) {
+      const latestMsg = messages[messages.length - 1] as Record<string, unknown>;
+      const titleText = getMessageText(latestMsg).slice(0, 50) || 'New Conversation';
       const [newSession] = await db
         .insert(chatSessions)
         .values({
           userId,
-          title: messages[messages.length - 1]?.content?.slice(0, 50) || 'New Conversation',
+          title: titleText,
         })
         .returning();
       currentSessionId = newSession.id;
     }
 
     // Persist the latest user message
-    const latestUserMsg = messages[messages.length - 1];
+    const latestUserMsg = messages[messages.length - 1] as Record<string, unknown> | undefined;
     if (latestUserMsg && latestUserMsg.role === 'user') {
+      const userText = getMessageText(latestUserMsg);
       await db.insert(chatMessages).values({
         sessionId: currentSessionId,
         role: 'user',
-        content: String(latestUserMsg.content || ''),
-      }).catch((e) => logger.warn('Failed to record user chat message', { error: String(e) }));
+        content: userText || '',
+      }).catch((e: unknown) => logger.warn('Failed to record user chat message', { error: String(e) }));
     }
 
-    // 5. Model Execution: Evaluator-Optimizer Loop with streamText & maxSteps
+    // 5. Model Execution: Evaluator-Optimizer Loop with streamText & stopWhen (v7 API)
     const hasApiKey = Boolean(process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.OPENAI_API_KEY);
 
     if (hasApiKey && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       const result = streamText({
-        model: google('gemini-flash-latest'),
+        model: google('gemini-3.6-flash'),
         system: CHAT_SYSTEM_PROMPT,
         messages,
         tools,
-        maxSteps: 5,
+        stopWhen: stepCountIs(5),
         onFinish: async (event) => {
           // Persist the final assistant reply
           if (event.text) {
             await db.insert(chatMessages).values({
-              sessionId: currentSessionId,
+              sessionId: currentSessionId!,
               role: 'assistant',
               content: event.text,
-            }).catch((e) => logger.warn('Failed to record assistant message', { error: String(e) }));
+            }).catch((e: unknown) => logger.warn('Failed to record assistant message', { error: String(e) }));
           }
         },
       });
 
-      return result.toDataStreamResponse({
+      return result.toUIMessageStreamResponse({
         headers: {
-          'x-chat-session-id': currentSessionId,
+          'x-chat-session-id': currentSessionId!,
         },
       });
     }
 
     // Fallback streaming mode when API key is unconfigured
-    const lastUserQuery = (latestUserMsg?.content || '').toLowerCase();
+    const lastUserQuery = getMessageText(latestUserMsg ?? {}).toLowerCase();
     let fallbackReply = "I am the Civic Innovation Marketplace assistant. How can I help you understand problem reporting, university projects, or corporate escrow funding?";
 
     if (lastUserQuery.includes('capital') || lastUserQuery.includes('france') || lastUserQuery.includes('weather') || lastUserQuery.includes('python')) {
       fallbackReply = "I can only help with Civic Innovation Marketplace-related questions — for general knowledge or coding, you're better off searching the web or asking a general assistant.";
     } else if (lastUserQuery.includes('status') || lastUserQuery.includes('problem') || lastUserQuery.includes('report') || lastUserQuery.includes('my')) {
-      const toolRes = await tools.getMyProblemStatus.execute({ limit: 5 }, {} as any);
-      if (toolRes && 'problems' in toolRes && (toolRes as any).problems.length > 0) {
-        const top = (toolRes as any).problems[0];
+      const toolRes = await tools.getMyProblemStatus.execute({ limit: 5 }, {} as never);
+      if (toolRes && typeof toolRes === 'object' && 'problems' in toolRes && Array.isArray(toolRes.problems) && toolRes.problems.length > 0) {
+        const top = toolRes.problems[0];
         fallbackReply = `Here is the status of your reported problem:\n\n• **Title:** ${top.title}\n• **Status:** ${top.status}\n• **Domain:** ${top.domain}\n• **Claimed By:** ${top.claimedByUniversity}\n• **Submitted:** ${top.submittedAt}`;
       } else {
         fallbackReply = "I checked your account records. You currently do not have any submitted problems in the database.";
       }
     } else if (lastUserQuery.includes('escrow') || lastUserQuery.includes('how') || lastUserQuery.includes('sponsor') || lastUserQuery.includes('claim')) {
-      const helpRes = await tools.searchAppHelp.execute({ query: lastUserQuery }, {} as any);
-      if (helpRes && 'results' in helpRes && (helpRes as any).results.length > 0) {
-        fallbackReply = (helpRes as any).results[0].content;
+      const helpRes = await tools.searchAppHelp.execute({ query: lastUserQuery }, {} as never);
+      if (helpRes && typeof helpRes === 'object' && 'results' in helpRes && Array.isArray(helpRes.results) && helpRes.results.length > 0) {
+        fallbackReply = helpRes.results[0].content;
       }
     }
 
-    // Return mock streaming response conforming to AI SDK data stream
+    // Return mock streaming response conforming to AI SDK UI message stream
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       start(controller) {
@@ -311,13 +308,15 @@ export async function POST(request: Request) {
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        'x-chat-session-id': currentSessionId,
+        'x-chat-session-id': currentSessionId!,
       },
     });
-  } catch (err: any) {
-    logger.error('Chat API unhandled error', { error: String(err), stack: err?.stack });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Something went wrong processing your message.';
+    const stack = err instanceof Error ? err.stack : undefined;
+    logger.error('Chat API unhandled error', { error: message, stack });
     return NextResponse.json(
-      { error: err?.message || 'Something went wrong processing your message.' },
+      { error: message },
       { status: 500 },
     );
   }

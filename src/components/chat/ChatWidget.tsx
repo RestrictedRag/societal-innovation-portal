@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
+import type { UIMessage } from 'ai';
 import {
   Bot,
   ChevronUp,
@@ -19,6 +20,14 @@ const SUGGESTED_PROMPTS = [
   "What are the requirements to submit an issue?",
   "How do universities claim projects?",
 ];
+
+/** Extract visible text from a v7 UIMessage's parts array. */
+function getTextFromParts(message: UIMessage): string {
+  return message.parts
+    .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+    .map((p) => p.text)
+    .join('\n');
+}
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -73,7 +82,7 @@ export function ChatWidget() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     void handleSend();
   };
@@ -163,14 +172,7 @@ export function ChatWidget() {
               </div>
             ) : (
               messages.map((m) => {
-                const messageText = typeof m.content === 'string'
-                  ? m.content
-                  : Array.isArray((m as any).parts)
-                  ? (m as any).parts
-                      .filter((p: any) => p.type === 'text')
-                      .map((p: any) => p.text)
-                      .join('\n')
-                  : '';
+                const messageText = getTextFromParts(m);
 
                 if (!messageText && m.role === 'assistant' && isLoading) return null;
 
@@ -231,7 +233,7 @@ export function ChatWidget() {
 
           {/* Input Form */}
           <form
-            onSubmit={handleSubmit}
+            onSubmit={handleFormSubmit}
             className="border-t border-slate-800 bg-slate-900/90 p-3 flex items-center gap-2"
           >
             <input
